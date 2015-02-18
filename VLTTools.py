@@ -1,9 +1,10 @@
 import os
-import paramiko
 import numpy
 import pyfits
 import warnings
 import select
+import logging
+import subprocess
 
 class VLTConnection( object ):
     """
@@ -14,18 +15,12 @@ class VLTConnection( object ):
         - what else?
 
     """
-    def __init__(self, hostname, username, simulate=True):
-        self.hostname = hostname
-        self.username = username
-        if not(simulate):
-            self.ssh = paramiko.SSHClient()
-            self.ssh.load_system_host_keys()
-            self.ssh.connect(self.hostname, username=self.username)
-            self.ftp = self.ssh.open_sftp()
+    def __init__(self, simulate=True):
         self.localpath = './data/'
         self.remotepath = './local/test/'
         self.CDMS = CDMS()
         self.sim = simulate
+        self.logging = logging.basicConfig(level=logging.DEBUG)
 
     def simulate(self):
         self.sim = True
@@ -35,25 +30,8 @@ class VLTConnection( object ):
 
     def sendCommand(self, command, response=False):
         if not(self.sim):
-            stdin, stdout, stderr = self.ssh.exec_command(command)
-            if response:
-                retval = []
-            while not stdout.channel.exit_status_ready():
-                if stdout.channel.recv_ready():
-                    rl, wl, xl = select.select([stdout.channel], [], [], 0.0)
-                    if len(rl) > 0:
-                        received = stdout.channel.recv(1024)
-                        if response:
-                            retval.append(received)
-                        else:
-                            print received
-        else:
-            print("VLT Connection in Simulation mode.  The command I would have sent is:")
-            print(command)
-            response = []
-        if response:
-            return retval
-
+            self.log.debug("Executing '%s'" % command)
+            exitCode = os.system(command)
 
     def parse(self, text):
         print text
