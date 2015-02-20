@@ -5,6 +5,7 @@ import warnings
 import select
 import logging
 import subprocess
+import SPARTATools
 
 class VLTConnection( object ):
     """
@@ -16,11 +17,10 @@ class VLTConnection( object ):
 
     """
     def __init__(self, simulate=True):
-        self.localpath = './data/'
-        self.remotepath = './local/test/'
+        self.datapath = os.path.expanduser('~')+'/data/'
         self.CDMS = CDMS()
         self.sim = simulate
-        self.logging = logging.basicConfig(level=logging.DEBUG)
+        logging.basicConfig(level=logging.DEBUG)
 
     def simulate(self):
         self.sim = True
@@ -30,28 +30,53 @@ class VLTConnection( object ):
 
     def sendCommand(self, command, response=False):
         if not(self.sim):
-            self.log.debug("Executing '%s'" % command)
-            exitCode = os.system(command)
+            logging.debug("Executing '%s'" % command)
+            results = subprocess.check_output(command, shell=True)
+            if response:
+                return results
+        else:
+            print("In Simulation mode.  I would have executed the following command")
+            print("'%s'" % command)
+            if response:
+                return "SIMULATION"
 
-    def parse(self, text):
-        print text
-        return 0.0
+    def parse(self, text, type):
+        lines = text.split('\n')
+        retval = numpy.array(lines[1].split(), dtype=type)
+        return retval
+
+    def updateMap(self, mapname):
+        localfile = self.datapath+self.CDMS.maps[mapname].outfile
+        command = "cdmsSave -f "+localfile+" "+mapname
+        self.sendCommand(command)
+        self.CDMS.maps[mapname].load(localfile)
+
+    def transmitMap(self, mapname, update=None):
+        localfile = self.datapath+self.CDMS.maps[mapname].outfile
+        self.CDMS.maps[mapname].write(path=self.datapath)
+        command = "cdmsLoad -f "+localfile+" "+mapname+" --rename"
+        self.sendCommand(command)
+        if update:
+            command = "msgSend \"\" spaccsServer EXEC \" -command "+update+".update ALL\""
+            self.sendCommand(command)
+        
+    def mirrorCDMS(self):
+        for mapname in self.CDMS.maps.keys():
+            self.updateMap(mapname)
 
     def set_Tip(self, tip):
+        self.CDMS.maps['TTCtr.ACT_POS_REF_MAP'].data[0][0] = tip
         self.sendCommand("msgSend \"\" CDMSGateway SETMAP \"-object TTCtr.ACT_POS_REF_MAP -function 0,0="+str("%.2g" % tip)+"\"")
         self.sendCommand("msgSend \"\" spaccsServer EXEC \"-command TTCtr.update ALL\"")
 
     def set_Tilt(self, tilt):
+        self.CDMS.maps['TTCtr.ACT_POS_REF_MAP'].data[0][1] = tilt
         self.sendCommand("msgSend \"\" CDMSGateway SETMAP \"-object TTCtr.ACT_POS_REF_MAP -function 0,1="+str("%.2g" % tilt)+"\"")
         self.sendCommand("msgSend \"\" spaccsServer EXEC \"-command TTCtr.update ALL\"")
 
-    def get_Tip(self):
-        tip = self.sendCommand("msgSend \"\" CDMSGateway GETMAP \"-object TTCtr.ACT_POS_REF_MAP -function 0,0\"", response=True)
-        return self.parse(tip)
-
-    def get_Tilt(self):
-        tilt = self.sendCommand("msgSend \"\" CDMSGateway GETMAP \"-object TTCtr.ACT_POS_REF_MAP -function 0,1\"", response=True)
-        return self.parse(tilt)
+    def get_TipTilt(self):
+        tip = self.sendCommand("msgSend \"\" CDMSGateway GETMAP \"-object TTCtr.ACT_POS_REF_MAP -function 0,0 1,0\"", response=True)
+        return self.parse(tip, numpy.float32)
 
     def set_TT_gain(self, gain):
         self.sendCommand("msgSend \"\" CDMSGateway SETMAP \"-object TTCtr.TERM_B -function 0,0="+str("%.2g" % gain)+"\"")
@@ -61,101 +86,25 @@ class VLTConnection( object ):
         self.sendCommand("msgSend \"\" CDMSGateway SETMAP \"-object HOCtr.TERM_B -function 0,0="+str("%.2g" % gain)+"\"")
         self.sendCommand("msgSend \"\" spaccsServer EXEC \"-command HOCtr.update ALL\"")
 
-    def get_HO_ACT_POS_REF_MAP(self):
-        name = self.CDMS.maps["HOCtr.ACT_POS_REF_MAP"].outfile
-        command = "cdmsSave -f "+self.remotepath+name+" HOCtr.ACT_POS_REF_MAP"
-        self.sendCommand(command)
-        if not(self.sim):
-            self.ftp.get(self.remotepath+name, self.localpath+name)
-        return pyfits.getdata(self.localpath+name)
 
-    def get_TT_ACT_POS_REF_MAP(self):
-        name = self.CDMS.maps["TTCtr.ACT_POS_REF_MAP"].outfile
-        command = "cdmsSave -f "+self.remotepath+name+" TTCtr.ACT_POS_REF_MAP"
-        self.sendCommand(command)
-        if not(self.sim):
-            self.ftp.get(self.remotepath+name, self.localpath+name)
-        return pyfits.getdata(self.localpath+name)
+    def calc_CommandMatrix(self, nFiltModes=20):
+        self.CDMS.maps['Recn.REC1.CM'].replace(
+                  SPARTATools.calculateCommandMatrix(
+                         self.CDMS.maps['HORecnCalibrat.RESULT_IM'],
+                         self.CDMS.maps['TTRecnCalibrat.RESULT.IM'],
+                         nFiltModes))
+        
+    def set_CommandMatrix(self):
+        print("This is where the Command matrix is uploaded to SL and updated")
+        #self.transmitMap('Recn.REC1.CM')
+        self.transmitMap('Recn.REC1.CM', update='Recn')
 
-    def set_gain(self, gain):
-        termA = numpy.array([-1], dtype='float32')
-        termB = gain*(numpy.array([-1.0, 0.0], dtype='float32'))
-        self.CDMS.maps["HOCtr.TERM_A"].replace(termA)
-        self.CDMS.maps["HOCtr.TERM_B"].replace(termB)
-        self.CDMS.maps["HOCtr.TERM_A"].write(path=self.localpath)
-        self.CDMS.maps["HOCtr.TERM_B"].write(path=self.localpath)
-        nameA = self.CDMS.maps["HOCtr.TERM_A"].outfile
-        nameB = self.CDMS.maps["HOCtr.TERM_B"].outfile
-        self.ftp.put(self.localpath+nameA, self.remotepath+nameA)
-        self.ftp.put(self.localpath+nameB, self.remotepath+nameB)
-        stdin, stdout, stderr = self.ssh.exec_command("cdmsLoad -f "+self.remotepath+nameA+" HOCtr.TERM_A --rename")
-        while not stdout.channel.exit_status_ready():
-            if stdout.channel.recv_ready():
-                rl, wl, xl = select.select([stdout.channel], [], [], 0.0)
-                if len(rl) > 0:
-                    print stdout.channel.recv(1024)
-        stdin, stdout, stderr = self.ssh.exec_command("cdmsLoad -f "+self.remotepath+nameB+" HOCtr.TERM_B --rename")
-        while not stdout.channel.exit_status_ready():
-            if stdout.channel.recv_ready():
-                rl, wl, xl = select.select([stdout.channel], [], [], 0.0)
-                if len(rl) > 0:
-                    print stdout.channel.recv(1024)
-        termB = gain*(numpy.array([-1.0, 0.0], dtype='float32'))
-        self.CDMS.maps["TTCtr.TERM_A"].replace(termA)
-        self.CDMS.maps["TTCtr.TERM_B"].replace(termB)
-        self.CDMS.maps["TTCtr.TERM_A"].write(path=self.localpath)
-        self.CDMS.maps["TTCtr.TERM_B"].write(path=self.localpath)
-        nameA = self.CDMS.maps["TTCtr.TERM_A"].outfile
-        nameB = self.CDMS.maps["TTCtr.TERM_B"].outfile
-        self.ftp.put(self.localpath+nameA, self.remotepath+nameA)
-        self.ftp.put(self.localpath+nameB, self.remotepath+nameB)
-        stdin, stdout, stderr = self.ssh.exec_command("cdmsLoad -f "+self.remotepath+nameA+" TTCtr.TERM_A --rename")
-        while not stdout.channel.exit_status_ready():
-            if stdout.channel.recv_ready():
-                rl, wl, xl = select.select([stdout.channel], [], [], 0.0)
-                if len(rl) > 0:
-                    print stdout.channel.recv(1024)
-        stdin, stdout, stderr = self.ssh.exec_command("cdmsLoad -f "+self.remotepath+nameB+" TTCtr.TERM_B --rename")
-        while not stdout.channel.exit_status_ready():
-            if stdout.channel.recv_ready():
-                rl, wl, xl = select.select([stdout.channel], [], [], 0.0)
-                if len(rl) > 0:
-                    print stdout.channel.recv(1024)
-
-    def make_TT_unscr(self):
-        self.CDMS.maps["TTCtr.SEC_ACT_UNSCR_MAP"].write(path=self.localpath)
-        name = self.CDMS.maps["TTCtr.SEC_ACT_UNSCR_MAP"].outfile
-        self.ftp.put(self.localpath+name, self.remotepath+name)
-        stdin, stdout, stderr = self.ssh.exec_command("cdmsLoad -f "+self.remotepath+name+" TTCtr.SEC_ACT_UNSCR_MAP --rename")
-        while not stdout.channel.exit_status_ready():
-            if stdout.channel.recv_ready():
-                rl, wl, xl = select.select([stdout.channel], [], [], 0.0)
-                if len(rl) > 0:
-                    print stdout.channel.recv(1024)
-
-    def set_CommandMatrix(self, pattern):
-        self.CDMS.maps["Recn.REC1.CM"].replace(pattern)
-        self.CDMS.maps["Recn.REC1.CM"].write(path=self.localpath)
-        name = self.CDMS.maps["Recn.REC1.CM"].outfile
-        self.ftp.put(self.localpath+name, self.remotepath+name)
-        stdin, stdout, stderr = self.ssh.exec_command("cdmsLoad -f "+self.remotepath+name+" Recn.REC1.CM --rename")
-        while not stdout.channel.exit_status_ready():
-            if stdout.channel.recv_ready():
-                rl, wl, xl = select.select([stdout.channel], [], [], 0.0)
-                if len(rl) > 0:
-                    print stdout.channel.recv(1024)
+    def measure_InteractionMatrices(self):
+        print("This is where the Interaction Matrices will be measured")
 
     def get_InteractionMatrices(self):
-        HOname = self.CDMS.maps["HORecnCalibrat.RESULT_IM"].outfile
-        TTname = self.CDMS.maps["TTRecnCalibrat.RESULT.IM"].outfile
-        command = "cdmsSave -f "+self.remotepath+HOname+" HORecnCalibrat.RESULT_IM"
-        self.sendCommand(command)
-        command = "cdmsSave -f "+self.remotepath+TTname+" TTRecnCalibrat.RESULT.IM"
-        self.sendCommand(command)
-        self.ftp.get(self.remotepath+HOname, self.localpath+HOname)
-        self.ftp.get(self.remotepath+TTname, self.localpath+TTname)
-        return HOname, TTname
-        
+        self.updateMap('HORecnCalibrat.RESULT_IM')
+        self.updateMap('TTRecnCalibrat.RESULT.IM')
 
     def changePixelTapPoint(self, tp):
         try:
@@ -168,22 +117,15 @@ class VLTConnection( object ):
             else:
                 print("Error!  Unrecognized tap point!")
                 escape
-            stdin, stdout, stderr = self.ssh.exec_command("cdmsSetProp Acq.CFG.DYNAMIC DET1.PIXEL_TAP -s \""+tp+"\"")
-            while not stdout.channel.exit_status_ready():
-                if stdout.channel.recv_ready():
-                    rl, wl, xl = select.select([stdout.channel], [], [], 0.0)
-                    if len(rl) > 0:
-                        print stdout.channel.recv(1024)
+            command="cdmsSetProp Acq.CFG.DYNAMIC DET1.PIXEL_TAP -s \""+tp+"\""
+            self.sendCommand(command)
         except:
             print("Error!  Invalid tap point!")
 
     def measureBackground(self, nframes):
-        stdin, stdout, stderr = self.ssh.exec_command("msgSend \"\" CommandGateway EXEC \"AcqOptimiser.measureBackground "+str(nframes)+"\"")
-        while not stdout.channel.exit_status_ready():
-            if stdout.channel.recv_ready():
-                rl, wl, xl = select.select([stdout.channel], [], [], 0.0)
-                if len(rl) > 0:
-                    print stdout.channel.recv(1024)
+        command="msgSend \"\" CommandGateway EXEC \"AcqOptimiser.measureBackground "+str(nframes)+"\""
+        self.sendCommand(command)
+        self.updateMap('Acq.DET1.BACKGROUND')
 
     def updateAcq(self):
         stdin, stdout, stderr = self.ssh.exec_command("msgSend \"\" spaccsServer EXEC \"-command Acq.update ALL\"")
@@ -220,6 +162,9 @@ class CDMS_Map( object ):
 
     def replace(self, newmap):
         self.data = self.dtype(newmap).copy()
+
+    def load(self, file):
+        self.data = pyfits.getdata(file)
         
     def revert(self):
         self.data = self.data_template.copy()
@@ -246,7 +191,7 @@ class CDMS( object ):
         self.populateMapDefs()
 
     def populateMapDefs(self):
-        definitionFile = '/home/deen/Code/Python/BlurryApple/Tools/CDMS_Map_Definitions.dat'
+        definitionFile = os.path.dirname(__file__)+'/CDMS_Map_Definitions.dat'
         df = open(definitionFile, 'r')
         for line in df:
             l = line.split(',')
