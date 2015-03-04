@@ -93,16 +93,16 @@ class modalBasis ( object ):
        self.nFilt = nFilt
        self.nHOAct = 60   # Number of High-Order Actuators
        self.nTTAct = 2    # Number of Tip/Tilt Actuators
-       self.nSubap = 68   # Number of Sub-Apertures
+       self.nSubap = 136   # Number of Sub-Apertures * 2
        self.createModalBasis()
 
    def createModalBasis(self):
        # Generalized inverse of the High-Order Interaction Matrix
-       HO_inv = pseudoinv( self.HOIM, self.nFilt)
+       self.HO_inv = pseudoinv( self.HOIM, self.nFilt)
 
        # Computation of set of DM voltages that reproduce a pure Tilt/Tip
        # WARNING: These tip/tilts may contain some piston
-       TT2HO = numpy.dot(HO_inv, self.TTIM)
+       TT2HO = numpy.dot(self.HO_inv, self.TTIM)
 
        # Computation of PISTON mode as the least visible with highest
        # variance
@@ -118,7 +118,7 @@ class modalBasis ( object ):
        # Compute modes as KL in the measurement space
        turb, eigss = self.KLbasisSlopesSpace()
        self.nUseful = self.nHOAct - self.nFilt
-       modes = numpy.dot(HO_inv, eigss)[:,2:self.nUseful]
+       modes = numpy.dot(self.HO_inv, eigss)[:,2:self.nUseful]
 
        # Make all these modes orthogonal to piston
        modes = self.filterOutPiston(modes) 
@@ -130,12 +130,13 @@ class modalBasis ( object ):
        self.modes = numpy.dot(modes, numpy.diag(numpy.sqrt(varTT2HO/var)) )
 
        # Compute Modes to Voltages
-       self.M2V = numpy.zeros((self.nHOACt+self.nTTAct, self.nUseful))
-       self.M2V[:self.nHOAct,selfnTTAct: ] = self.modes
+       self.M2V = numpy.zeros((self.nHOAct+self.nTTAct, self.nUseful))
+       self.M2V[:self.nHOAct,self.nTTAct: ] = self.modes
        self.M2V[self.nHOAct, 0] = 1.
        self.M2V[self.nHOAct+1, 1] = 1.
 
        # Make a single interaction matrix
+
        self.IM = numpy.zeros((self.nSubap, self.nHOAct+self.nTTAct))
        self.IM[:,0:self.nHOAct] = self.HOIM
        self.IM[:,self.nHOAct:self.nHOAct+self.nTTAct] = self.TTIM
@@ -148,7 +149,7 @@ class modalBasis ( object ):
        # Compute the projection of a voltage vector onto the command space
        self.M2VHO = numpy.zeros((self.nHOAct, self.nUseful))
        self.M2VHO[:,0:2] = self.TT2HO
-       self.M2VHO[:,self.nTTAct:self.nTTAct] = self.M2V[:self.nHOAct,self.nTTAct:]
+       self.M2VHO[:,self.nTTAct:] = self.M2V[:self.nHOAct,self.nTTAct:]
        projAWF = numpy.identity(self.nHOAct) - numpy.dot(self.M2VHO,
                       pseudoinv(self.M2VHO, 0))
        lam, mod = diagonalisation(projAWF)
@@ -158,14 +159,13 @@ class modalBasis ( object ):
        self.createSMAbasis()
 
    def createSMAbasis(self):
-       m = self.filterOutPiston(numpy.identity(self.nHOAct), self.pistonMode,
-                                self.pistonProj)
+       m = self.filterOutPiston(numpy.identity(self.nHOAct))
        lam, mo = diagonalisation(numpy.dot(m.T, numpy.dot(self.delta, m)))
        mo = numpy.dot(m, mo)
 
-       SMAbasis = numpy.zeros(delta.shape)
+       SMAbasis = numpy.zeros(self.delta.shape)
        SMAbasis[:,0] = self.pistonMode
-       SMAbasis[:,1:] = mo[:,:,-1]
+       SMAbasis[:,1:] = mo[:,:-1]
 
        self.SMAbasis = SMAbasis
 
@@ -192,7 +192,7 @@ class modalBasis ( object ):
        (m,n) = modes.shape
        fmodes = numpy.zeros((m, n)) # create the ouput, filtered modes
        for i in range(n):
-           fmodes[:,i] = modes[:,i] - pistonMode*proj[i]
+           fmodes[:,i] = modes[:,i] - self.pistonMode*proj[i]
        return fmodes
 
    def KLbasisSlopesSpace(self):
@@ -221,8 +221,26 @@ class modalBasis ( object ):
        # compute covariance matrix of the slopes Css = Z2S * Czz * Z2S.T
        covSlopes = numpy.dot( Z2S, numpy.dot(fullNoll, Z2S.T))
 
-       proj = numpy.dot(self.miaHO, self.miaHO1)
+       proj = numpy.dot(self.HOIM, self.HO_inv)
        covSlopes = numpy.dot(proj, numpy.dot(covSlopes, proj.T))
 
        turb, eigss = diagonalisation(covSlopes)
        return turb, eigss
+
+
+   def computeSystemControlMatrix(self):
+       """
+       stores the command matrix of the system in self.CM
+       """
+       # Matrix-multiply modes * S2M
+       # in a "Normal System"
+       CM = numpy.dot(self.M2V, self.S2M)
+
+       # Transform the tip-tilt correction matrix into a
+       # DM-tilt correction matrix
+       tiltHO = numpy.dot(self.TT2HO, CM[60:62,:])
+
+       # Add this DM-tilt correction matrix to the DM one
+       CM[0:60,:] += tiltHO
+
+       self.CM = CM

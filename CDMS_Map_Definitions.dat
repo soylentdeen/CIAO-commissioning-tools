@@ -17,7 +17,7 @@ HOCtr.ACT_POS_REF_MAP, 1, 60, float32, 0.0, False
 HOCtr.SMA_BASIS, 1, 3600, float32, 0.0, False
 HOCtr.AWF_IM_KERNEL, 1, 180, float32, 1.0, False
 HOCtr.ACT_UNSCR_MAP, 1, 60, int32, -1.0, True
-HOCtr.HO_TO_TT, 1, 60, float32, 1.0, False
+HOCtr.HO_TO_TT, 1, 120, float32, 1.0, False
 HOCtr.PRA_PISTON_MODE, 1, 60, float32, 1.0, False
 HOCtr.PRA_PISTON_PROJECTION, 1, 60, float32, 1.0, False
 HOCtr.PRA_PISTON_PROJECTION2, 1, 60, float32, 1.0, False

@@ -121,8 +121,9 @@ class VLTConnection( object ):
     """
 
     def calc_CommandMatrix(self, nFiltModes=20):
-        self.modalBasis = SPARTATools.modalBasis(scipy.matrix(self.CDMS.maps['HORecnCalibrat.RESULT_IM'].data), scipy.matrix(self.CDMS.maps['TTRecnCalibrat.RESULT.IM'].data), nFiltModes)
-        print "Hunkey Dorey"
+        self.modalBasis = SPARTATools.modalBasis(self.CDMS.maps['HORecnCalibrat.RESULT_IM'].data, self.CDMS.maps['TTRecnCalibrat.RESULT.IM'].data, nFiltModes)
+        self.modalBasis.computeSystemControlMatrix()
+        sefl.
         
     def set_CommandMatrix(self):
         #self.transmitMap('Recn.REC1.CM')

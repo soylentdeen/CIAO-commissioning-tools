@@ -255,6 +255,8 @@ Specifications
     #
     M2VHO = np.zeros((na, nuseful))
     M2VHO[:,0:2] = TT2HO
+    print na
+    raw_input()
     M2VHO[:,2: ] = M2V[:na,2: ]
     projAWF = np.identity(na) - np.dot(M2VHO, pseudoinv( M2VHO, 0 ))
     lam, mod = diagonalisation(projAWF)
@@ -421,8 +423,7 @@ and the
     Hint = 1./(1-np.exp(-p*Te))      # numeric integrator
     Hccd = (1.-np.exp(-p*Te))/(p*Te) # zero-order hold with 1/2 frame delay
     Hdac = Hccd                      # well, same.
-    tdelay = latency - Te            # time between END of the integratino and start
-of command
+    tdelay = latency - Te            # time between END of the integratino and start of command
     Hret = np.exp(-p*tdelay)         # latency transfer function
     # transfer func of the DM, as a 1st order filter
     Hmir = 1./(1. + 1j*freq/BP)
@@ -476,10 +477,8 @@ miaHO, miaTT, Fs, latency)
 
     # Produces an array of gains
     ngain = 15       # value to be adjusted during AITs
-    gmin = 0.0       # TBC, maybe we'll keep gmin=0.001 to allow for static
-aberration compensation, if any. TBC during AIT.
-    G = np.linspace(np.sqrt(gmin), np.sqrt(gmax), ngain)**2   # 1D array from gmin
-to gmax in ngain points
+    gmin = 0.0       # TBC, maybe we'll keep gmin=0.001 to allow for static aberration compensation, if any. TBC during AIT.
+    G = np.linspace(np.sqrt(gmin), np.sqrt(gmax), ngain)**2   # 1D array from gmin to gmax in ngain points
 
     npfft = nrec//2    # number of useful points in the FFT
     # create a 1D array of frequency ranging from Fs/nrec to Fs/2.0 in npfft points
@@ -805,8 +804,7 @@ fullNoll = pyfits.getdata(mypath+'ZernikeCovar_Noll.fits')
 # (piston mode (will be used in sparta)), and also <S2M> the modal
 # control matrix, i.e. a control matrix that multiplies to slopes
 # vectors and produces the modes coefficients.
-(TT2HO, HO2TT, M2V, pistonMode, pistonProj, S2M, AWFbasis, SMAbasis) =
-createModalBasis( miaHO, miaTT, delta, fullNoll, Z2S, 9)
+(TT2HO, HO2TT, M2V, pistonMode, pistonProj, S2M, AWFbasis, SMAbasis) = createModalBasis( miaHO, miaTT, delta, fullNoll, Z2S, 9)
 
 
 mc = computeSystemControlMatrix( S2M, M2V, TT2HO )
