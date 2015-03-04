@@ -8,6 +8,7 @@ import logging
 import subprocess
 import time
 import SPARTATools
+import scipy
 import matplotlib.pyplot as pyplot
 
 class VLTConnection( object ):
@@ -23,6 +24,7 @@ class VLTConnection( object ):
         self.datapath = os.path.expanduser('~')+'/data/'
         self.CDMS = CDMS()
         self.sim = simulate
+        self.modalBasis = None
         logging.basicConfig(level=logging.DEBUG)
 
     def simulate(self):
@@ -109,12 +111,18 @@ class VLTConnection( object ):
         self.sendCommand("msgSend \"\" spaccsServer EXEC \"-command HOCtr.update ALL\"")
 
 
+    """
     def calc_CommandMatrix(self, nFiltModes=20):
         self.CDMS.maps['Recn.REC1.CM'].replace(
                   SPARTATools.calculateCommandMatrix(
                          self.CDMS.maps['HORecnCalibrat.RESULT_IM'],
                          self.CDMS.maps['TTRecnCalibrat.RESULT.IM'],
                          nFiltModes))
+    """
+
+    def calc_CommandMatrix(self, nFiltModes=20):
+        self.modalBasis = SPARTATools.modalBasis(scipy.matrix(self.CDMS.maps['HORecnCalibrat.RESULT_IM'].data), scipy.matrix(self.CDMS.maps['TTRecnCalibrat.RESULT.IM'].data), nFiltModes)
+        print "Hunkey Dorey"
         
     def set_CommandMatrix(self):
         #self.transmitMap('Recn.REC1.CM')

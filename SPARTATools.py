@@ -2,6 +2,7 @@ import scipy
 import numpy
 #import matplotlib.pyplot as pyplot
 import pyfits
+import os
 from scipy.linalg import *
 
 class framesViewer( object ):
@@ -56,10 +57,10 @@ def pseudoinv(mat, nFilt, calm=False):
        for i in range(40,60):
            DtD[i,i] += avdiag*0.05
    lam, u = diagonalisation(DtD)
-   for i in range(lam.shape[0]-nfilt):
+   for i in range(lam.shape[0]-nFilt):
        u[:,i] /= numpy.sqrt(lam[i])
-   if (nfilt>0):
-       u[:,-nfilt:] = 0.0
+   if (nFilt>0):
+       u[:,-nFilt:] = 0.0
    return numpy.dot(numpy.dot(u, u.T), mat.T)
 
 def diagonalisation(A):
@@ -82,12 +83,13 @@ def diagonalisation(A):
    return (eigenvalue, M)
 
 class modalBasis ( object ):
-   def __init__(self, HOIM, TTIM, delta, fullNoll, Z2S, nFilt):
+   def __init__(self, HOIM, TTIM, nFilt):
+       self.datapath = os.path.dirname(__file__)+'/Data/'
        self.HOIM = HOIM
        self.TTIM = TTIM
-       self.delta = delta
-       self.fullNoll = fullNoll
-       self.Z2S = Z2S
+       self.delta = pyfits.getdata(self.datapath+"delta_MACAO.fits")
+       self.fullNoll = pyfits.getdata(self.datapath+"ZernikeCovar_Noll.fits")
+       self.Z2S = pyfits.getdata(self.datapath+"Z2S_136s_119z.fits").T
        self.nFilt = nFilt
        self.nHOAct = 60   # Number of High-Order Actuators
        self.nTTAct = 2    # Number of Tip/Tilt Actuators
@@ -217,7 +219,7 @@ class modalBasis ( object ):
        fullNoll = self.fullNoll[0:nz, 0:nz]
        Z2S = self.Z2S[:, 0:nz]
        # compute covariance matrix of the slopes Css = Z2S * Czz * Z2S.T
-       covSlopes = numpy.dot( Z2S, numpy.dot(fullNoll, Z2S.T)
+       covSlopes = numpy.dot( Z2S, numpy.dot(fullNoll, Z2S.T))
 
        proj = numpy.dot(self.miaHO, self.miaHO1)
        covSlopes = numpy.dot(proj, numpy.dot(covSlopes, proj.T))
