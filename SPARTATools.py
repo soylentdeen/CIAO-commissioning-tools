@@ -55,7 +55,31 @@ def pseudoinv(mat, nFilt, calm=False):
        avdiag = numpy.average(numpy.diag(DtD))
        for i in range(40,60):
            DtD[i,i] += avdiag*0.05
+   lam, u = diagonalisation(DtD)
+   for i in range(lam.shape[0]-nfilt):
+       u[:,i] /= numpy.sqrt(lam[i])
+   if (nfilt>0):
+       u[:,-nfilt:] = 0.0
+   return numpy.dot(numpy.dot(u, u.T), mat.T)
 
+def diagonalisation(A):
+   """
+   Input arg:
+   <A> : square, symmetric matrix
+
+   Output:
+   tuple with sorted eigenvalues and correpsonding eigenvectors
+
+   This function is equivalent to numpy.linalg.eigh() (=diagonalisation
+   of a symmetric matrix), plust sorting the eigenvalues
+   """
+
+   (eigenvalue, M) = numpy.linalg.eigh(A)
+
+   sortindex = numpy.argsort(eigenvalue)[::-1]
+   eigenvalue = eigenvalue[sortindex]
+   M = M[:,sortindex]
+   return (eigenvalue, M)
 
 class modalBasis ( object ):
    def __init__(self, HOIM, TTIM, delta, fullNoll, Z2S, nFilt):
@@ -123,7 +147,7 @@ class modalBasis ( object ):
        self.M2VHO = numpy.zeros((self.nHOAct, self.nUseful))
        self.M2VHO[:,0:2] = self.TT2HO
        self.M2VHO[:,self.nTTAct:self.nTTAct] = self.M2V[:self.nHOAct,self.nTTAct:]
-       projAWF = numpy.identity(self.nHOAct] - numpy.dot(self.M2VHO,
+       projAWF = numpy.identity(self.nHOAct) - numpy.dot(self.M2VHO,
                       pseudoinv(self.M2VHO, 0))
        lam, mod = diagonalisation(projAWF)
        self.AWFbasis = numpy.dot(mod[:,0:self.nFilt], 
@@ -137,8 +161,66 @@ class modalBasis ( object ):
        lam, mo = diagonalisation(numpy.dot(m.T, numpy.dot(self.delta, m)))
        mo = numpy.dot(m, mo)
 
-       self.SMAbasis = numpy.zeros(delta.shape)
-       self.SMAbasis[:,0] = self.pistonMode
-       self.SMAbasis[:,1:] = mo[:,:,-1]
+       SMAbasis = numpy.zeros(delta.shape)
+       SMAbasis[:,0] = self.pistonMode
+       SMAbasis[:,1:] = mo[:,:,-1]
 
+       self.SMAbasis = SMAbasis
 
+   def filterOutPiston(self, modes):
+       """
+       Input args :
+       <modes>      2D array of floats, is an array containing N modes, it is an array 60xN
+       <pistonMode> 1D array of floats, is the piston mode defined on actuator voltages (60 components)
+       <delta>      2D array of floats, is the geometric cov matrix of the DM (60x60), fixed.
+       The function will suppress piston from all the modes of matrix <modes>.
+       """
+
+       # Compute the scalar product between pistonMode and (delta.pistonMode)
+       # this is a projection of the piston mode on itself
+       pnorm = numpy.dot(self.pistonMode, self.pistonProj)
+
+       # compute the scalar products between each of the modes and
+       # delta.pistonMode, this is a projection of each mode on piston
+       proj = numpy.dot(modes.T, self.pistonProj)
+       # normalize by the value of the projection of the piston on itself
+       proj /= pnorm
+       # now we know the amount of each piston in each mode, we need
+       # to subtract it...
+       (m,n) = modes.shape
+       fmodes = numpy.zeros((m, n)) # create the ouput, filtered modes
+       for i in range(n):
+           fmodes[:,i] = modes[:,i] - pistonMode*proj[i]
+       return fmodes
+
+   def KLbasisSlopesSpace(self):
+       """
+       Input args:
+       <fullNoll> : matrix (120, 120), given as an input (covariance
+                    matrix of zernike modes)
+       <Z2S> : matrix zernike to slopes
+       <miaHO> : HODM interaction matrix
+       <miaHO1> : filtered pseudo inverse of miaHO
+
+       Outputs:
+       The procedure returns
+       - the eigenvalues of the KL modes of the
+       measurements projected onto the commanded subspace of miaHO1
+       - the modes
+       """
+       n = self.fullNoll.shape[0]
+       ns, nz = self.Z2S.shape
+
+       # see what's the common number of zernike of both
+       nz = min(n, nz)
+       # cut matrices to the right size
+       fullNoll = self.fullNoll[0:nz, 0:nz]
+       Z2S = self.Z2S[:, 0:nz]
+       # compute covariance matrix of the slopes Css = Z2S * Czz * Z2S.T
+       covSlopes = numpy.dot( Z2S, numpy.dot(fullNoll, Z2S.T)
+
+       proj = numpy.dot(self.miaHO, self.miaHO1)
+       covSlopes = numpy.dot(proj, numpy.dot(covSlopes, proj.T))
+
+       turb, eigss = diagonalisation(covSlopes)
+       return turb, eigss
