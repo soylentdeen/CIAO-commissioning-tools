@@ -1,0 +1,32 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+
+CFG.OBJECT								"LoopConcentr.CFG.STATIC";
+
+LoopConcentr.CFG.STATIC.LOOP_TOPIC		"LoopFrame";
+LoopConcentr.CFG.STATIC.SUBSAMPLE_TOPIC	        "LoopSubsFrame";
+LoopConcentr.CFG.STATIC.AVG_TOPIC		"LoopAvgFrame";
+
+LoopConcentr.CFG.STATIC.HOST1			"$RTB1_HOST";	# SH9x9 HOST
+LoopConcentr.CFG.STATIC.QUEUE1.SIZE		5000;		# 
+LoopConcentr.CFG.STATIC.PORT1			8000;		# SH9x9 PORT
+LoopConcentr.CFG.STATIC.ENABLE1                 1;              #
+
+LoopConcentr.CFG.STATIC.HOST2			"$RTB1_HOST";	# HODM HOST
+LoopConcentr.CFG.STATIC.QUEUE2.SIZE		5000;		# 
+LoopConcentr.CFG.STATIC.PORT2			8005;		# HODM PORT
+LoopConcentr.CFG.STATIC.ENABLE2                 1;              #
+
+LoopConcentr.CFG.STATIC.HOST3			"$RTB1_HOST";	# TTM HOST
+LoopConcentr.CFG.STATIC.QUEUE3.SIZE		5000;		# 
+LoopConcentr.CFG.STATIC.PORT3			8004;		# TTM PORT
+LoopConcentr.CFG.STATIC.ENABLE3                 1;              #
+
+LoopConcentr.CFG.STATIC.QSIZE                   5000;           #
+LoopConcentr.CFG.STATIC.TIMEOUT                 10000;          #
+
+LoopConcentr.CFG.STATIC.SIM_WS_ONLY             0;           # 
+

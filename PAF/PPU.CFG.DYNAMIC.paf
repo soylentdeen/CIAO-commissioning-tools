@@ -1,0 +1,9 @@
+#----------------------------------------------------------------------
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Wed Oct 27 12:07:00 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT           "PPU.CFG.DYNAMIC";   # Scalar parameters for loop optimiser configuration
+#PPU.CFG.DYNAMIC.LOOPFREQ          1200.0; # Loop frequency in Herz (unused ?)
+PPU.CFG.DYNAMIC.PROCESSING_ENABLED 1;

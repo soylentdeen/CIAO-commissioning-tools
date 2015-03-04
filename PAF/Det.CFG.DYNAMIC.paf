@@ -1,0 +1,32 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Wed Feb 17 08:53:44 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT						"Det.CFG.DYNAMIC";				# 
+
+# dynamic configuration
+Det.CFG.DYNAMIC.DETX			96;								# Detector size X
+Det.CFG.DYNAMIC.DETY			72;								# Detector size Y
+Det.CFG.DYNAMIC.FRAMEFROM		"FILE";
+Det.CFG.DYNAMIC.FILENAME		"$SPARTA_WS:/diska/introot/SPACIAO/config/ciaoSimulatedFrameBuffer.fits";
+#Det.CFG.DYNAMIC.FRAMEFROM		"FUNCTION";
+Det.CFG.DYNAMIC.FUNCTION		"RAMP";
+Det.CFG.DYNAMIC.SEQNAME   "FowlerNsamp_Windows";      # readout sequence name
+Det.CFG.DYNAMIC.PIXELVAL		3;								# constant value of all pixels
+Det.CFG.DYNAMIC.SLOPEVAL		10;								# constant value of all pixels
+Det.CFG.DYNAMIC.INCVAL			100;							# constant value of all pixels
+Det.CFG.DYNAMIC.DIT       0.01;   # DIT
+Det.CFG.DYNAMIC.WINDOWENABLED     1;             # HW window flag
+Det.CFG.DYNAMIC.MAPFILENAME		"$SPARTA_WS:/diska/introot/SPACIAO/config/pixelUnscramblingMap.fits";
+Det.CFG.DYNAMIC.NBFRAMES		5;
+#Det.CFG.DYNAMIC.SIMFREQ			500;							# pixel frame rate in Hz
+# For development it better to have a low frequency to be able to monitor
+Det.CFG.DYNAMIC.SIMFREQ			2;							# pixel frame rate in Hz
+Det.CFG.DYNAMIC.NBLOOPS			-1;
+Det.CFG.DYNAMIC.SIMULATE		0;								# simulate access to ngc SW
+Det.CFG.DYNAMIC.STRX  100;      # window start
+Det.CFG.DYNAMIC.STRY  96;
+Det.CFG.DYNAMIC.NX            96;     # window dim
+Det.CFG.DYNAMIC.NY            72;
+

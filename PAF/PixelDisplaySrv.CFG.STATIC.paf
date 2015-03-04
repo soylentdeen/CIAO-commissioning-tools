@@ -1,0 +1,24 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT										"PixelDisplaySrv.CFG.STATIC";
+
+#####
+# Old setting from SPARTA_r2
+PixelDisplaySrv.CFG.STATIC.TOPIC				"PixelFrame";
+PixelDisplaySrv.CFG.STATIC.MULTICAST_ADDRESS	"";
+#####
+
+PixelDisplaySrv.CFG.STATIC.MULTICAST_ADDRESS    "";     #
+PixelDisplaySrv.CFG.STATIC.TOPIC        "PixelFrame";   #
+PixelDisplaySrv.CFG.STATIC.ENABLE_RTDC       1;
+#PixelDisplaySrv.CFG.STATIC.SAPHIRAPixels.GRID_CELL_SIZE 6;
+PixelDisplaySrv.CFG.STATIC.SAPHIRAPixels.MAX_SLOPE 3.5;
+PixelDisplaySrv.CFG.STATIC.SAPHIRAPixels.REFSLP "Acq.DET1.REFSLP";
+PixelDisplaySrv.CFG.STATIC.SAPHIRAPixels.SUBAP_MAP "LoopDisplaySrv.SUBAP_MAP";
+PixelDisplaySrv.CFG.STATIC.SAPHIRAPixels.LINE_COLOR   "yellow";
+PixelDisplaySrv.CFG.STATIC.SAPHIRAPixels.CROSS_COLOR  "white";
+PixelDisplaySrv.CFG.STATIC.SAPHIRAPixels.TEXT_COLOR   "black";
+

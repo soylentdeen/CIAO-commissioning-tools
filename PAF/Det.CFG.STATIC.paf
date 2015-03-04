@@ -1,0 +1,25 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Wed Feb 17 08:53:44 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT				"Det.CFG.STATIC";	# 
+
+# static configuration
+
+#####
+# Configuration for simulator NGC
+#Det.CFG.STATIC.HOSTIP	"$LCU_HOST";		#  IP address of ssisvr
+#Det.CFG.STATIC.PORT		6614;				# ssisvr port
+#Det.CFG.STATIC.SIM_WS_ONLY      0;      # simulation flag
+#####
+
+#####
+# Configuration for actual NGC
+Det.CFG.STATIC.ENVNAME  "wci1ao";       #
+Det.CFG.STATIC.NGCTYPE  "IRNGC";        # AONGC, IRNGC, AONGCSIM,
+Det.CFG.STATIC.OLDBALIAS        "ngcircon_NGCIR1";      #
+Det.CFG.STATIC.PROCNAME "ngcircon_NGCIR1";      #
+Det.CFG.STATIC.SIMULATE 0;      # simulate access to device
+Det.CFG.STATIC.SIM_WS_ONLY     0;
+#####

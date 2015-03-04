@@ -1,0 +1,9 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jun 27 10:50:00 2011";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT	"Recn.CFG.DYNAMIC";			# 
+Recn.CFG.DYNAMIC.MAT1.USERMAPNAME "Recn.REC1.CM";	# 
+Recn.CFG.DYNAMIC.MAT1.DYNAMIC   0; 			# Load on update?
+Recn.CFG.DYNAMIC.APPLY_MAPS_HOLDOFF_SECONDS 2.0;

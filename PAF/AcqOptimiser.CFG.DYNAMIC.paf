@@ -1,0 +1,30 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Feb 15 12:41:00 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT										"AcqOptimiser.CFG.DYNAMIC";				#
+
+AcqOptimiser.CFG.DYNAMIC.PROCESSING_ENABLED		1; 	
+AcqOptimiser.CFG.DYNAMIC.MAXMEASSECONDS			120.0;									# max allowable duration of measurement
+AcqOptimiser.CFG.DYNAMIC.MAXMEASFRAMES			10;
+
+# Basic maps for measurement
+AcqOptimiser.CFG.DYNAMIC.FLAT_MAP_NAME			"Acq.DET1.FLAT";						# measureFlat()
+AcqOptimiser.CFG.DYNAMIC.DARK_MAP_NAME			"Acq.DET1.DARK";						# measureDark()
+AcqOptimiser.CFG.DYNAMIC.BACKGROUND_MAP_NAME	"Acq.DET1.BACKGROUND";					# measureBackground()
+AcqOptimiser.CFG.DYNAMIC.DEFAULT_MAP_NAME		"AcqOptimiser.TMP_MEASUREMENT_SLOT";	# measureFrames()
+
+# params for dynamic update functions
+AcqOptimiser.CFG.DYNAMIC.REFSLP_MAP_NAME		"Acq.DET1.REFSLP"; 
+AcqOptimiser.CFG.DYNAMIC.THRESH_MAP_NAME		"Acq.DET1.THRESH";
+AcqOptimiser.CFG.DYNAMIC.THRESH_MAP_PIXELS_NAME	"AcqOptimiser.DET1.THRESH_PIXELS";
+AcqOptimiser.CFG.DYNAMIC.WEIGHT_MAP_NAME		"Acq.DET1.WEIGHT";
+
+AcqOptimiser.CFG.DYNAMIC.WEIGHT_SKIP_NFRAMES	300;									# N to skip
+AcqOptimiser.CFG.DYNAMIC.WEIGHT_NFRAMES			300;									# N to accumulate
+AcqOptimiser.CFG.DYNAMIC.WEIGHT_NORMALISE		1;										# normalise weight when calcualted from refslp
+AcqOptimiser.CFG.DYNAMIC.WEIGHT_GAUSS_FACTOR	1.0;
+AcqOptimiser.CFG.DYNAMIC.THRESH_SKIP_NFRAMES	944;									# N to skip
+AcqOptimiser.CFG.DYNAMIC.THRESH_NFRAMES			256;									# N to accumulate
+AcqOptimiser.CFG.DYNAMIC.THRESH_PERCENTAGE		10.0;									# Percent of max pixel value

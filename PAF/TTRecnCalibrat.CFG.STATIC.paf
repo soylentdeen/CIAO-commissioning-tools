@@ -1,0 +1,13 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT									"TTRecnCalibrat.CFG.STATIC";
+
+TTRecnCalibrat.CFG.STATIC.LOOP_TOPIC		"LoopFrame";		# Name of WFS topic
+TTRecnCalibrat.CFG.STATIC.DIST_TOPIC		"TTMDisturbFrame";	# Name of disturbance topic
+TTRecnCalibrat.CFG.STATIC.START_DELAY		1.0; 				# Time delay (seconds) between the start of the calibration procedure and the actual application 
+TTRecnCalibrat.CFG.STATIC.FIRST_BATCH_SIZE	100;				# Number of disturbance frames sent in the first batch. Must be >= 2xBATCH_SIZE
+TTRecnCalibrat.CFG.STATIC.BATCH_SIZE		50;	 				# Number of disturbance frames sent in a batch. The next batch is sent when the same number of WFS frames have been received.
+TTRecnCalibrat.CFG.STATIC.MULTICAST_ADDRESS     "";                     # DDS multicast address

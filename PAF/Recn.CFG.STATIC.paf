@@ -1,0 +1,37 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jun 27 10:50:00 2011";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT											"Recn.CFG.STATIC";				# 
+Recn.CFG.STATIC.RECTYPE								"SW";							# DSP | SW
+Recn.CFG.STATIC.SIM_WS_ONLY             0; # sim flag
+Recn.CFG.STATIC.DOUBLEBUFFERED						1;								# 
+Recn.CFG.STATIC.DRIVER								"$RTB1_HOST:7326";				#
+Recn.CFG.STATIC.ENDIANITY							"BIG";							#  
+Recn.CFG.STATIC.MAT1.USERMAPTRANSPOSED				1;								# Xaxis is UsedSub, Y axis is NAct
+Recn.CFG.STATIC.MAT1.USERTOLOGICAL					"Recn.ACT_USER_TO_LOGICAL_MAP";	#
+Recn.CFG.STATIC.MAT1.LOGICALTOPIPELINE				"Recn.ACT_UNSCR_MAP";			#
+Recn.CFG.STATIC.MAT1.SCRAMBLESUBAP					"Recn.SUBAP_UNSCR_MAP";			#
+Recn.CFG.STATIC.NUSEDSUB							68;								# 
+Recn.CFG.STATIC.MAT1.NACT							62;								# 
+Recn.CFG.STATIC.NMAT								1;								# 
+Recn.CFG.STATIC.NREC								1;								# 
+Recn.CFG.STATIC.SIMULATION							0;								# Only used by DSP code
+Recn.CFG.STATIC.FPGACODE							"<null>";						#
+Recn.CFG.STATIC.NUMVECBLOCKS						1;				 				#
+Recn.CFG.STATIC.VECBLOCKSIZE_1						56; 							#
+Recn.CFG.STATIC.SIMNBFRAMES							10; 							#
+Recn.CFG.STATIC.SIMFREQ								1; 								#
+Recn.CFG.STATIC.SIMMODE								"NONE"; 						#
+Recn.CFG.STATIC.SIMVECTOR							"Recn.SIMVECTOR"; 				#	
+Recn.CFG.STATIC.FIRMAREID							"<null>";						#
+
+Recn.CFG.STATIC.AUX_PUBLISHER.ENABLED				1;
+Recn.CFG.STATIC.AUX_PUBLISHER.PORT					9002;
+Recn.CFG.STATIC.AUX_PUBLISHER.FIFODEPTH				100;
+
+Recn.CFG.STATIC.AUX_SUBSCRIBER.ENABLED				1;
+Recn.CFG.STATIC.AUX_SUBSCRIBER.PORT					9101;
+Recn.CFG.STATIC.AUX_SUBSCRIBER.FIFODEPTH			10;	#
+

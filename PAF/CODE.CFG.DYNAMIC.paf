@@ -1,0 +1,22 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Tue Feb 23 10:25:08 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT	"CODE.CFG.DYNAMIC";	# 
+
+# Global configuration
+
+CODE.CFG.DYNAMIC.MONITORPERIOD	1;	# 
+
+# Combiner configuration
+
+CODE.CFG.DYNAMIC.COMBINER.DEVICE1.WAITFOR_STATE 1;
+CODE.CFG.DYNAMIC.COMBINER.DEVICE1.CLIPNEG -1.0;
+CODE.CFG.DYNAMIC.COMBINER.DEVICE1.CLIPPOS 1.0;
+
+CODE.CFG.DYNAMIC.COMBINER.DEVICE2.WAITFOR_STATE 1;
+CODE.CFG.DYNAMIC.COMBINER.DEVICE2.CLIPNEG -1.0;
+CODE.CFG.DYNAMIC.COMBINER.DEVICE2.CLIPPOS 1.0;
+
+CODE.CFG.DYNAMIC.DATE	"2010-01-14T16:08:22";	# file creation date (YYYY-MM-DDThh:mm:ss UT)

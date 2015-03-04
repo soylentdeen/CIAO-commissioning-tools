@@ -1,0 +1,12 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT							"HOCtrUpload.CFG.STATIC";
+
+HOCtrUpload.CFG.STATIC.RTDFL_HOST	"$RTB1_HOST";
+HOCtrUpload.CFG.STATIC.RTDFL_PORT	8010;
+HOCtrUpload.CFG.STATIC.TOPIC		"HODMDisturbFrame";
+HOCtrUpload.CFG.STATIC.SIM_WS_ONLY             0; # sim flag
+

@@ -1,0 +1,20 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT										"TTRecnCalibrat.CFG.DYNAMIC";
+
+TTRecnCalibrat.CFG.DYNAMIC.CYCLES				1;				 			# Number of calibration cycles (NOT IMPLEMENTED)
+TTRecnCalibrat.CFG.DYNAMIC.TIME_UNIT			"SAMPLES";			 		# SAMPLES or SECONDS
+TTRecnCalibrat.CFG.DYNAMIC.AMPLITUDE			0.1; 						# Amplitude of modulating signal
+TTRecnCalibrat.CFG.DYNAMIC.WAVE_PERIOD			86.0;			 			# Duration of modulating signal (in seconds or samples)
+TTRecnCalibrat.CFG.DYNAMIC.SKIP_TIME			0.0;			 			# Time to skip each half-period (in seconds or samples)
+TTRecnCalibrat.CFG.DYNAMIC.MODE_CYCLES			10;				 			# Number of cycles (periods) per mode
+TTRecnCalibrat.CFG.DYNAMIC.INTERACTION_MATRIX	"HORecnCalibrat.RESULT_IM";	# CDMS name of the interaction matrix
+TTRecnCalibrat.CFG.DYNAMIC.RECORD_ACT_POS		1; 							# Flag indicating whether actuator positions should be recorded during calibration
+TTRecnCalibrat.CFG.DYNAMIC.SIMULATION			0; 							# Simulation mode
+TTRecnCalibrat.CFG.DYNAMIC.DEBUG				1;	 						# Debug mode
+TTRecnCalibrat.CFG.DYNAMIC.AUTO_TUNE                   1; #Automatically configure parameters START_DELAY, BATCH_SIZE, and FIRST_BATCH_SIZE
+TTRecnCalibrat.CFG.DYNAMIC.FREQ_EST_ON_RUN             1; #Estimate Frequency when entering ONLINE:RUNNING
+TTRecnCalibrat.CFG.DYNAMIC.FREQ_EST_TIMEOUT            5; #Abort frequency estimation after FREQ_EST_TIMEOUT if no data recieved

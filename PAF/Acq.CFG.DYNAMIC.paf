@@ -1,0 +1,46 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT										"Acq.CFG.DYNAMIC";		# 
+Acq.CFG.DYNAMIC.DET1.BACKGROUND					"Acq.DET1.BACKGROUND";	#
+Acq.CFG.DYNAMIC.DET1.BACKGROUND_DYNAMIC			0;						# Load on update?
+Acq.CFG.DYNAMIC.DET1.DARK						"Acq.DET1.DARK";		# 
+Acq.CFG.DYNAMIC.DET1.DARK_DYNAMIC				0;						# Load on update?
+Acq.CFG.DYNAMIC.DET1.DEAD						"Acq.DET1.DEAD";		# 
+Acq.CFG.DYNAMIC.DET1.DEAD_DYNAMIC				0;						# Load on update?
+Acq.CFG.DYNAMIC.DET1.FLAT						"Acq.DET1.FLAT";		# 
+Acq.CFG.DYNAMIC.DET1.FLAT_DYNAMIC				0;						# Load on update?
+Acq.CFG.DYNAMIC.DET1.REFSLP						"Acq.DET1.REFSLP";		# 
+Acq.CFG.DYNAMIC.DET1.REFSLP_DYNAMIC				0;						# Load on update?
+Acq.CFG.DYNAMIC.DET1.THRESH						"Acq.DET1.THRESH";		# 
+Acq.CFG.DYNAMIC.DET1.THRESH_DYNAMIC				0;						# Load on update?
+Acq.CFG.DYNAMIC.DET1.WEIGHT						"Acq.DET1.WEIGHT";		# 
+Acq.CFG.DYNAMIC.DET1.WEIGHT_DYNAMIC				0;						# Load on update?
+Acq.CFG.DYNAMIC.DET1.HWWINDOW					1;						# 
+Acq.CFG.DYNAMIC.DET1.WINDOWX					96;						# 
+Acq.CFG.DYNAMIC.DET1.WINDOWY					72;						#
+Acq.CFG.DYNAMIC.DET1.SWWINDOW					1;						# 
+Acq.CFG.DYNAMIC.DET1.SWWINDOWX					72;						# 
+Acq.CFG.DYNAMIC.DET1.SWWINDOWY					72;						# 
+Acq.CFG.DYNAMIC.DET1.SWWINDOWXSTART				 2;						# 
+Acq.CFG.DYNAMIC.DET1.SWWINDOWYSTART				 0;						# 
+Acq.CFG.DYNAMIC.DET1.SWQUADRANT					0;						# 
+Acq.CFG.DYNAMIC.DET1.POWERVALUE					1.0;					# 1..2
+Acq.CFG.DYNAMIC.DET1.SUBAPFLUXTHRESH			0;						# 
+Acq.CFG.DYNAMIC.DET1.PIXEL_TAP					"CALIB";				# 
+Acq.CFG.DYNAMIC.DET1.SIMDATA					"Acq.DET1.SIMDATA";		# 
+Acq.CFG.DYNAMIC.DET1.SIMMODE					"NONE";					#
+Acq.CFG.DYNAMIC.DET1.SUBSAMPRATE				50;						#
+Acq.CFG.DYNAMIC.DET1.SIMFREQ					1;						#
+Acq.CFG.DYNAMIC.DET1.APPLY_MAPS_HOLDOFF_SECONDS	2.0;					# time to wait for APPPLY_MAPS
+Acq.CFG.DYNAMIC.DET1.PIXELNORMFACTOR                            0.0625;
+Acq.CFG.DYNAMIC.DET1.PIXELOFFSET                                100.0;
+Acq.CFG.DYNAMIC.DET1.CDSBLOCKREADOUTSIZE 0;                                      # Not applicable to Vis-SWPU (to be removed)
+Acq.CFG.DYNAMIC.DET1.PIXELBLOCKNUMBER    1;                                      # single block
+Acq.CFG.DYNAMIC.DET1.PIXELBLOCKSIZE_1    6912;                           # 96x72
+
+
+
+

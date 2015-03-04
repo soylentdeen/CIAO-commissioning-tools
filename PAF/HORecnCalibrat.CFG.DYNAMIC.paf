@@ -1,0 +1,24 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT											"HORecnCalibrat.CFG.DYNAMIC";
+
+HORecnCalibrat.CFG.DYNAMIC.CYCLES					1; 										# Number of calibration cycles
+HORecnCalibrat.CFG.DYNAMIC.TIME_UNIT				"SAMPLES";								# SAMPLES or SECONDS
+HORecnCalibrat.CFG.DYNAMIC.AMPLITUDE				0.1;									# Amplitude of modulating signal
+HORecnCalibrat.CFG.DYNAMIC.WAVE_PERIOD				86.0;									# Duration of modulating signal (in seconds or samples)
+HORecnCalibrat.CFG.DYNAMIC.SKIP_TIME				0.0;									# Time to skip each half-period (in seconds or samples)
+HORecnCalibrat.CFG.DYNAMIC.MODE_CYCLES				5;										# Number of cycles (periods) per mode
+HORecnCalibrat.CFG.DYNAMIC.ACTUATION_MATRIX			"HORecnCalibrat.ZONAL_60";	 			# actuation matrix name
+HORecnCalibrat.CFG.DYNAMIC.ACTUATION_MATRIX_INV		"HORecnCalibrat.ZONAL_60"; 				# actuation matrix inv. name
+HORecnCalibrat.CFG.DYNAMIC.INTERACTION_MATRIX   	"HORecnCalibrat.RESULT_IM";				# interaction matrix name
+HORecnCalibrat.CFG.DYNAMIC.REFERENCE_MATRIX     	"HORecnCalibrat.REF_IM";				# reference interaction matrix name
+HORecnCalibrat.CFG.DYNAMIC.NOISE_THRESHOLD			0.05;									# Noise threshold: ratio between the min and max x/y values of the IM
+HORecnCalibrat.CFG.DYNAMIC.RECORD_ACT_POS			1;										# Flag indicating whether actuator positions should be recorded during calibration
+HORecnCalibrat.CFG.DYNAMIC.SIMULATION				0;										# Simulation mode
+HORecnCalibrat.CFG.DYNAMIC.DEBUG					1;										# Debug mode
+HORecnCalibrat.CFG.DYNAMIC.AUTO_TUNE                           1;  #Automatically configure parameters START_DELAY, BATCH_SIZE, and FIRST_BATCH_SIZE
+HORecnCalibrat.CFG.DYNAMIC.FREQ_EST_ON_RUN                     1; #Estimate Frequency when entering ONLINE:RUNNING
+HORecnCalibrat.CFG.DYNAMIC.FREQ_EST_TIMEOUT                    5; #Abort frequency estimation after FREQ_EST_TIMEOUT if no data recieved

@@ -1,0 +1,39 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT									"LoopDisplaySrv.CFG.STATIC";
+
+#####
+# Old setting from SPARTA_r2
+#LoopDisplaySrv.CFG.STATIC.TOPIC				"LoopFrame";
+LoopDisplaySrv.CFG.STATIC.HODM_MAP			"LoopDisplaySrv.HODM_MAP";
+LoopDisplaySrv.CFG.STATIC.SUBAP_MAP			"LoopDisplaySrv.SUBAP_MAP";
+LoopDisplaySrv.CFG.STATIC.UNSCR_MAP			"LoopDisplaySrv.UNSCR_MAP";
+LoopDisplaySrv.CFG.STATIC.GRADIENTS_MAP		"LoopDisplaySrv.SUBAP_MAP";
+LoopDisplaySrv.CFG.STATIC.MAX_SLOPE			2.5;
+LoopDisplaySrv.CFG.STATIC.MULTICAST_ADDRESS	"";
+#####
+
+LoopDisplaySrv.CFG.STATIC.TOPIC "LoopFrame";    #
+LoopDisplaySrv.CFG.STATIC.MULTICAST_ADDRESS     "";     #
+LoopDisplaySrv.CFG.STATIC.ENABLE_RTDC        0;
+LoopDisplaySrv.CFG.STATIC.Gradients.REFSLP "Acq.DET1.REFSLP";
+LoopDisplaySrv.CFG.STATIC.Gradients.SUBAP_MAP "LoopDisplaySrv.SUBAP_MAP";
+LoopDisplaySrv.CFG.STATIC.Gradients.MAX_SLOPE 2.5;
+LoopDisplaySrv.CFG.STATIC.Gradients.GRID_CELL_SIZE 50;
+LoopDisplaySrv.CFG.STATIC.Gradients.LINE_COLOR   "yellow";
+LoopDisplaySrv.CFG.STATIC.Gradients.TEXT_COLOR   "black";
+LoopDisplaySrv.CFG.STATIC.Intensities.SUBAP_MAP "LoopDisplaySrv.SUBAP_MAP";
+LoopDisplaySrv.CFG.STATIC.Intensities.GRID_CELL_SIZE 50;
+LoopDisplaySrv.CFG.STATIC.Intensities.LINE_COLOR   "yellow";
+LoopDisplaySrv.CFG.STATIC.Intensities.TEXT_COLOR   "black";
+LoopDisplaySrv.CFG.STATIC.HODM.HODM_MAP "LoopDisplaySrv.HODM_MAP";
+LoopDisplaySrv.CFG.STATIC.HODM.GRID_CELL_SIZE 50;
+LoopDisplaySrv.CFG.STATIC.HODM.LINE_COLOR   "yellow";
+LoopDisplaySrv.CFG.STATIC.HODM.TEXT_COLOR   "black";
+LoopDisplaySrv.CFG.STATIC.TTM.GRID_CELL_SIZE 50;
+LoopDisplaySrv.CFG.STATIC.TTM.LINE_COLOR   "yellow";
+LoopDisplaySrv.CFG.STATIC.TTM.TEXT_COLOR   "black";
+

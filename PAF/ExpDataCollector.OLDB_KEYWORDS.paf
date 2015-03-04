@@ -1,0 +1,11 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT									"ExpDataCollector.OLDB_KEYWORDS";
+
+#ExpDataCollector.OLDB_KEYWORDS.SH4040		"Appl_data:SPARTA:VisLoopConcentr.sh4040_addr";
+#ExpDataCollector.OLDB_KEYWORDS.FRAMRATE	"Appl_data:SPARTA:VisLoopConcentr.frame_rate";
+#ExpDataCollector.OLDB_KEYWORDS.FRAMCNT		"Appl_data:SPARTA:VisLoopConcentr.frame_counter";
+#ExpDataCollector.OLDB_KEYWORDS.LPSTATE		"Appl_data:SPARTA:VisLoopConcentr.state";

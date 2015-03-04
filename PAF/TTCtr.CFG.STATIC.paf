@@ -1,0 +1,31 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Tue Feb  9 08:27:16 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT											"TTCtr.CFG.STATIC";			# 
+TTCtr.CFG.STATIC.DRIVER								"$RTB1_HOST:7328";			# 
+TTCtr.CFG.STATIC.SIM_WS_ONLY                                                    0;
+TTCtr.CFG.STATIC.ENDIANITY							"ENDIANITY_BIG";			# 
+TTCtr.CFG.STATIC.ID									1;							# unused ?
+TTCtr.CFG.STATIC.NACT								2;							# 
+TTCtr.CFG.STATIC.ORDER								1;							# 
+TTCtr.CFG.STATIC.RTDFDEPTH							3000;						# actuator position download
+TTCtr.CFG.STATIC.RTDFPORT							8004;						# 
+TTCtr.CFG.STATIC.DRTDFDEPTH							3000;						# disturbance upload
+TTCtr.CFG.STATIC.DRTDFPORT							8009;						# 
+TTCtr.CFG.STATIC.TYPE								"IIR_EXT1";					# Tip tilt controller type
+TTCtr.CFG.STATIC.FPGACODE							"<null>";					# 
+TTCtr.CFG.STATIC.TERM_A								"TTCtr.TERM_A";				# 
+TTCtr.CFG.STATIC.TERM_B								"TTCtr.TERM_B";				#
+TTCtr.CFG.STATIC.ACT_UNSCR_MAP						"TTCtr.ACT_UNSCR_MAP";		#
+TTCtr.CFG.STATIC.N_SECONDARY_ACT					60;							#
+TTCtr.CFG.STATIC.SECONDARY_ACT_UNSCR_MAP			"TTCtr.SEC_ACT_UNSCR_MAP";	#	
+
+TTCtr.CFG.STATIC.AUX_PUBLISHER.ENABLED				1;
+TTCtr.CFG.STATIC.AUX_PUBLISHER.PORT					9004;
+TTCtr.CFG.STATIC.AUX_PUBLISHER.FIFODEPTH			10;
+
+TTCtr.CFG.STATIC.AUX_SUBSCRIBER.ENABLED				1;
+TTCtr.CFG.STATIC.AUX_SUBSCRIBER.PORT				9103;
+TTCtr.CFG.STATIC.AUX_SUBSCRIBER.FIFODEPTH			10;	#

@@ -1,0 +1,16 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT									"PixelRecorder.CFG.DYNAMIC";
+
+PixelRecorder.CFG.DYNAMIC.CREATE_LINK            0;
+PixelRecorder.CFG.DYNAMIC.FIELDS                "";     # null
+PixelRecorder.CFG.DYNAMIC.FILE_DIRNAME		"/diska/data/SPARTA";
+PixelRecorder.CFG.DYNAMIC.FILE_BASENAME		"PixelData";
+PixelRecorder.CFG.DYNAMIC.LINK_DIR              "/data/SPARTA/links";   # null
+PixelRecorder.CFG.DYNAMIC.REQUESTED_FRAMES	0;
+PixelRecorder.CFG.DYNAMIC.START_AT              0;      # null
+PixelRecorder.CFG.DYNAMIC.SUBSAMPLING_FACTOR    0;      # null
+

@@ -1,0 +1,20 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT									"PixelConcentr.CFG.STATIC";
+
+PixelConcentr.CFG.STATIC.LOOP_TOPIC			"PixelFrame";
+PixelConcentr.CFG.STATIC.SUBSAMPLE_TOPIC	"PixelSubsFrame";
+PixelConcentr.CFG.STATIC.AVG_TOPIC			"PixelAvgFrame";
+
+PixelConcentr.CFG.STATIC.HOST1				"$RTB1_HOST";	# Det HOST
+PixelConcentr.CFG.STATIC.ENABLE1                1;                      #
+
+#PixelConcentr.CFG.STATIC.QUEUE1.SIZE		100;			# 
+PixelConcentr.CFG.STATIC.PORT1				8001;			# Det PORT
+PixelConcentr.CFG.STATIC.QSIZE                  100;                    #
+PixelConcentr.CFG.STATIC.TIMEOUT                10000;                  #
+PixelConcentr.CFG.STATIC.SIM_WS_ONLY            0;           # 
+

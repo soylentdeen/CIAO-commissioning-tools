@@ -1,0 +1,19 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Feb 15 12:41:00 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT											"AcqOptimiser.CFG.STATIC";		# 
+
+AcqOptimiser.CFG.STATIC.TOPIC						"PixelFrame";				# DDS topic
+AcqOptimiser.CFG.STATIC.DYNAMIC_UPDATE_MODE			"NONE";							# NONE | DYNAMIC | STATIC | CLASSIC
+AcqOptimiser.CFG.STATIC.SUBAP_POS_MAP_NAME			"Acq.DET1.MAPS.SUBAPPOSMAP";
+AcqOptimiser.CFG.STATIC.SUBAP_NUM_MAP_NAME			"Acq.DET1.MAPS.SUBAPNUMMAP";
+AcqOptimiser.CFG.STATIC.SCRAMBLE_MAP_NAME			"Acq.DET1.MAPS.SCRAMBLEMAP";
+AcqOptimiser.CFG.STATIC.UNSCRAMBLE_MAP_NAME			"Acq.DET1.MAPS.UNSCRAMBLEMAP";
+AcqOptimiser.CFG.STATIC.DETID						0;
+AcqOptimiser.CFG.STATIC.MULTICAST_ADDRESS			"";
+
+# Slave states
+AcqOptimiser.CFG.STATIC.STATE_MASTER_OBJECTS		"HOCtr";
+AcqOptimiser.CFG.STATIC.STATE_LOGICAL_EXPRESSION	"(HOCtr.substate = CLOSED_LOOP)"; 

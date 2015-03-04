@@ -1,0 +1,16 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT									"LoopRecorder.CFG.DYNAMIC";
+
+LoopRecorder.CFG.DYNAMIC.CREATE_LINK            0;      # null
+LoopRecorder.CFG.DYNAMIC.FIELDS                 "";     # null
+LoopRecorder.CFG.DYNAMIC.FILE_BASENAME          "SensorData";
+LoopRecorder.CFG.DYNAMIC.FILE_DIRNAME		"/diska/data/SPARTA";
+LoopRecorder.CFG.DYNAMIC.LINK_DIR               "/data/SPARTA/links";   # null
+LoopRecorder.CFG.DYNAMIC.REQUESTED_FRAMES	0;
+LoopRecorder.CFG.DYNAMIC.START_AT               0;      # null
+LoopRecorder.CFG.DYNAMIC.SUBSAMPLING_FACTOR     0;      # null
+

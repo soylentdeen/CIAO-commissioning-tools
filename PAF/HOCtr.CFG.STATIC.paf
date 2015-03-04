@@ -1,0 +1,32 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Tue Feb  9 08:27:16 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT											"HOCtr.CFG.STATIC";			# 
+HOCtr.CFG.STATIC.DRIVER								"$RTB1_HOST:7330";			#
+HOCtr.CFG.STATIC.SIM_WS_ONLY                                                    0;
+HOCtr.CFG.STATIC.ENDIANITY							"ENDIANITY_BIG";			# 
+HOCtr.CFG.STATIC.ID									0;							# 
+HOCtr.CFG.STATIC.NACT								60;							# 
+HOCtr.CFG.STATIC.ORDER								1;							# 
+HOCtr.CFG.STATIC.RTDFDEPTH							3000;						# actuator position download
+HOCtr.CFG.STATIC.RTDFPORT							8005;						# 
+HOCtr.CFG.STATIC.DRTDFDEPTH							3000;						# disturbance upload
+HOCtr.CFG.STATIC.DRTDFPORT							8010;						# 
+HOCtr.CFG.STATIC.TYPE								"IIR_EXT2";					# High Order controller type
+HOCtr.CFG.STATIC.FPGACODE							"<null>";					# 
+HOCtr.CFG.STATIC.TERM_A								"HOCtr.TERM_A";				#
+HOCtr.CFG.STATIC.TERM_B								"HOCtr.TERM_B";				#
+HOCtr.CFG.STATIC.ACT_UNSCR_MAP						"HOCtr.ACT_UNSCR_MAP";		#
+HOCtr.CFG.STATIC.N_SECONDARY_ACT					2;							#
+HOCtr.CFG.STATIC.SECONDARY_ACT_UNSCR_MAP			"HOCtr.SEC_ACT_UNSCR_MAP";	# 
+
+HOCtr.CFG.STATIC.AUX_PUBLISHER.ENABLED				1;
+HOCtr.CFG.STATIC.AUX_PUBLISHER.PORT					9003;
+HOCtr.CFG.STATIC.AUX_PUBLISHER.FIFODEPTH			10;
+
+HOCtr.CFG.STATIC.AUX_SUBSCRIBER.ENABLED				1;
+HOCtr.CFG.STATIC.AUX_SUBSCRIBER.PORT				9102;
+HOCtr.CFG.STATIC.AUX_SUBSCRIBER.FIFODEPTH			10;	#
+

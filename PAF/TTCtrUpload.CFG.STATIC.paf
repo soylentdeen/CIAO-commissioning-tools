@@ -1,0 +1,12 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT							"TTCtrUpload.CFG.STATIC";
+
+TTCtrUpload.CFG.STATIC.RTDFL_HOST	"$RTB1_HOST";
+TTCtrUpload.CFG.STATIC.RTDFL_PORT	8009;
+TTCtrUpload.CFG.STATIC.TOPIC		"TTMDisturbFrame";
+TTCtrUpload.CFG.STATIC.SIM_WS_ONLY   0;      # simulation flag
+

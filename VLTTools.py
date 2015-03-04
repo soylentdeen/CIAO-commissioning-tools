@@ -1,11 +1,14 @@
 import os
+import glob
 import numpy
 import pyfits
 import warnings
 import select
 import logging
 import subprocess
+import time
 import SPARTATools
+import matplotlib.pyplot as pyplot
 
 class VLTConnection( object ):
     """
@@ -30,7 +33,7 @@ class VLTConnection( object ):
 
     def sendCommand(self, command, response=False):
         if not(self.sim):
-            logging.debug("Executing '%s'" % command)
+            #logging.debug("Executing '%s'" % command)
             results = subprocess.check_output(command, shell=True)
             if response:
                 return results
@@ -44,6 +47,25 @@ class VLTConnection( object ):
         lines = text.split('\n')
         retval = numpy.array(lines[1].split(), dtype=type)
         return retval
+
+    def applyPAF(self, paf):
+        name = paf.name
+        for key in paf.parameters.keys():
+            par = paf.parameters[key]
+            if isinstance(par, numpy.int):
+                flag = '-i'
+            elif isinstance(par, numpy.float):
+                flag = '-d'
+            else:
+                flag = '-s'
+            command = "cdmsSetProp "+name+" "+key+" "+flag+" "+str(par)
+            self.sendCommand(command)
+
+
+    def saveMap(self, mapname, filename):
+        localfile = self.datapath+filename
+        command = "cdmsSave -f "+localfile+" "+mapname
+        self.sendCommand(command)
 
     def updateMap(self, mapname):
         localfile = self.datapath+self.CDMS.maps[mapname].outfile
@@ -95,12 +117,52 @@ class VLTConnection( object ):
                          nFiltModes))
         
     def set_CommandMatrix(self):
-        print("This is where the Command matrix is uploaded to SL and updated")
         #self.transmitMap('Recn.REC1.CM')
         self.transmitMap('Recn.REC1.CM', update='Recn')
 
-    def measure_InteractionMatrices(self):
-        print("This is where the Interaction Matrices will be measured")
+    def save_CommandMatrixPlot(self):
+        self.updateMap("Recn.REC1.CM")
+        fig = pyplot.figure(0)
+        ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+        ax.imshow(self.CDMS.maps['Recn.REC1.CM'].data)
+        fig.savefig("CM.png")
+
+    def measure_HOIM(self, config=None):
+        if config:
+            self.applyPAF(self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"])
+        command = "msgSend \"\" spaccsServer EXEC \" -command HORecnCalibrat.run\""
+        self.sendCommand(command)
+        #command = "msgSend \"\" spaccsServer EXEC \" -command HORecnCalibrat.waitIdle\""
+        command = "dbRead \"<alias>SPARTA:HORecnCalibrat.percent_complete\""
+        complete = 0
+        time.sleep(5.0)
+        while complete < 100:
+            wait = self.sendCommand(command, response=True)
+            complete = numpy.float(wait.split()[-1])
+            print complete
+            time.sleep(5.0)
+
+    def measure_TTIM(self, config=None):
+        if config:
+            self.applyPAF(self.CDMS.paf["TTRecnCalibrat.CFG.DYNAMIC"])
+        command = "msgSend \"\" spaccsServer EXEC \" -command TTRecnCalibrat.run\""
+        self.sendCommand(command)
+
+    def setup_HOIM(self, amplitude=0.1, noise=0.05, skip=0.01,
+                   period=0.5, cycles=1):
+        self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("TIME_UNIT",
+                  "SECONDS")
+        self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("WAVE_PERIOD",
+                  period)
+        self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("AMPLITUDE",
+                  amplitude)
+        self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("NOISE_THRESHOLD",
+                  noise)
+        self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("SKIP_TIME", skip)
+        self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("CYCLES", cycles)
+    
+    def get_HOIM(self):
+        self.updateMap('HORecnCalibrat.RESULT_IM')
 
     def get_InteractionMatrices(self):
         self.updateMap('HORecnCalibrat.RESULT_IM')
@@ -126,15 +188,6 @@ class VLTConnection( object ):
         command="msgSend \"\" CommandGateway EXEC \"AcqOptimiser.measureBackground "+str(nframes)+"\""
         self.sendCommand(command)
         self.updateMap('Acq.DET1.BACKGROUND')
-
-    def updateAcq(self):
-        stdin, stdout, stderr = self.ssh.exec_command("msgSend \"\" spaccsServer EXEC \"-command Acq.update ALL\"")
-        while not stdout.channel.exit_status_ready():
-            if stdout.channel.recv_ready():
-                rl, wl, xl = select.select([stdout.channel], [], [], 0.0)
-                if len(rl) > 0:
-                    print stdout.channel.recv(1024)
-    
 
 class CDMS_Map( object ):
     def __init__(self, name, ax1, ax2, dtype, filltype, bscale):
@@ -185,10 +238,38 @@ class CDMS_Map( object ):
         warnings.filterwarnings('always', category=UserWarning, append=True)
 
 
+class PAF_File( object ):
+    def __init__(self, filename, name):
+        self.name = name
+        self.file = filename
+        self.parameters = {}
+        file = open(filename, 'r')
+        for line in file:
+            l = line.split()
+            if len(l) > 0:
+                if (l[0].find(name) == 0) & (l[0][0] != '#'):
+                    parameter = l[0][len(name)+1:]
+                    if (l[1][:-1].find('.') != -1):
+                        try:
+                            val = numpy.float(l[1][:-1])
+                        except:
+                            val = l[1][:-1]
+                    else:
+                        try:
+                            val = numpy.int(l[1][:-1])
+                        except:
+                            val = l[1][:-1]
+                    self.parameters[parameter] = val
+    
+    def update(self, parameter, value):
+        self.parameters[parameter] = value
+
 class CDMS( object ):
     def __init__(self):
         self.maps = {}
         self.populateMapDefs()
+        self.paf = {}
+        self.populatePAF()
 
     def populateMapDefs(self):
         definitionFile = os.path.dirname(__file__)+'/CDMS_Map_Definitions.dat'
@@ -203,3 +284,9 @@ class CDMS( object ):
             bscale = bool(l[5])
             self.maps[name] = CDMS_Map(name, ax1, ax2, dtype, filltype, bscale)
 
+    def populatePAF(self):
+        pafdirectory = os.path.dirname(__file__)+'/PAF/'
+        paffiles = glob.glob(pafdirectory+'*.paf')
+        for paf in paffiles:
+            name = paf[len(pafdirectory):-4]
+            self.paf[name] = PAF_File(paf, name)

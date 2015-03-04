@@ -1,0 +1,11 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT				"RTC.CFG";
+
+RTC.CFG.NUM_ACT			60;		# number of actuators
+RTC.CFG.NUM_USED_SUBAP	68;		# used subapertures
+RTC.CFG.NUM_MODES		60;		# system modes
+RTC.CFG.LOOP_FREQ		10.0;

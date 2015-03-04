@@ -1,0 +1,28 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT							"Main.CFG.DYNAMIC";	# 
+
+# All defined runlists
+Main.CFG.DYNAMIC.RUNLISTS			"DEFAULT";
+
+# Each Runlist can be divided into phases executed one after the other
+# within a phase all actions are done in parallel
+# Phases are executed fowards for RUN and reversed for IDLE
+
+Main.CFG.DYNAMIC.RUNLIST.DEFAULT1	"Recn HOCtr TTCtr PixelConcentr LoopConcentr HOCtrUpload TTCtrUpload WPUUpload ExpDataCollector";
+Main.CFG.DYNAMIC.RUNLIST.DEFAULT2	"Acq";
+Main.CFG.DYNAMIC.RUNLIST.DEFAULT3	"CODE";
+Main.CFG.DYNAMIC.RUNLIST.DEFAULT4	"Det"; 
+
+# Idle order
+Main.CFG.DYNAMIC.IDLELIST1			"Det"; # should stop all input unless in simulation
+Main.CFG.DYNAMIC.IDLELIST2			"CODE"; # stop code after all input
+Main.CFG.DYNAMIC.IDLELIST3			"Acq"; # this should stop all input even if in simulation
+Main.CFG.DYNAMIC.IDLELIST4			"Recn HOCtr TTCtr PixelConcentr LoopConcentr HOCtrUpload TTCtrUpload WPUUpload ExpDataCollector";
+
+Main.CFG.DYNAMIC.NUMALARMS			0;
+Main.CFG.DYNAMIC.OPTIMISELISTS		"";
+Main.CFG.DYNAMIC.EXPOSUREHANDLER	"ExpDataCollector";

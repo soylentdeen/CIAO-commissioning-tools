@@ -1,0 +1,10 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT									"LoopRecorder.CFG.STATIC";
+
+LoopRecorder.CFG.STATIC.TOPIC				"LoopFrame";
+LoopRecorder.CFG.STATIC.MULTICAST_ADDRESS	"";
+LoopRecorder.CFG.STATIC.MIN_DISK_SPACE		200;             # in MegaBytes

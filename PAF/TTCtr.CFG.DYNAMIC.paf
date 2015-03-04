@@ -1,0 +1,10 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Tue Feb  9 08:27:16 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT										"TTCtr.CFG.DYNAMIC";		# 
+TTCtr.CFG.DYNAMIC.ACT_POS_REF					"TTCtr.ACT_POS_REF_MAP";	# 
+TTCtr.CFG.DYNAMIC.AWGAIN						-0.0;						# 
+TTCtr.CFG.DYNAMIC.APPLY_MAPS_HOLDOFF_SECONDS	3.0;						# slow loop, so don't make it too short
+TTCtr.CFG.DYNAMIC.TTGAIN						1.0;						#	

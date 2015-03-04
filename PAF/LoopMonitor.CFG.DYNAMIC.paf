@@ -1,0 +1,21 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT										"LoopMonitor.CFG.DYNAMIC";
+
+LoopMonitor.CFG.DYNAMIC.GRADIENTS2FOCUS			"LoopMonitor.SLOPES2FOCUS";
+LoopMonitor.CFG.DYNAMIC.POSITIONS2FOCUS			"LoopMonitor.POSITIONS2FOCUS";
+LoopMonitor.CFG.DYNAMIC.GRADIENTS2TIPTILT		"LoopMonitor.SLOPES2TT";
+LoopMonitor.CFG.DYNAMIC.POSITIONS2TIPTILT		"LoopMonitor.POSITIONS2TT";
+LoopMonitor.CFG.DYNAMIC.MON_DEFAULT_SKIPSAMPLES	0;
+LoopMonitor.CFG.DYNAMIC.MON_DEFAULT_NSAMPLES	30;
+LoopMonitor.CFG.DYNAMIC.MON_DEFAULT_MA_WINDOW	10;
+LoopMonitor.CFG.DYNAMIC.MON_DEFAULT_PUBL_PERIOD	1;
+LoopMonitor.CFG.DYNAMIC.MON_DMSATUR_THRESHOLD	0.1;
+LoopMonitor.CFG.DYNAMIC.DMPOS_PROJ				"LoopMonitor.DMPOS_PROJ";
+
+
+
+

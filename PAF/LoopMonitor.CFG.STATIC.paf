@@ -1,0 +1,13 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT										"LoopMonitor.CFG.STATIC";
+
+LoopMonitor.CFG.STATIC.TOPIC					"LoopFrame";
+LoopMonitor.CFG.STATIC.REF_GRADIENTS			"Acq.DET1.REFSLP";
+LoopMonitor.CFG.STATIC.REF_DMPOS				"HOCtr.ACT_POS_REF_MAP";
+LoopMonitor.CFG.STATIC.REF_TTMPOS				"TTCtr.ACT_POS_REF_MAP";
+LoopMonitor.CFG.STATIC.STATE_MASTER_OBJECTS     "HOCtr TTCtr";
+LoopMonitor.CFG.STATIC.STATE_LOGICAL_EXPRESSION	"(HOCtr.substate = CLOSED_LOOP) & (TTCtr.substate = CLOSED_LOOP)";

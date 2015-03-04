@@ -1,0 +1,26 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Tue Feb  9 08:27:16 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT										"HOCtr.CFG.DYNAMIC";		# 
+HOCtr.CFG.DYNAMIC.ACT_POS_REF					"HOCtr.ACT_POS_REF_MAP";	# 
+HOCtr.CFG.DYNAMIC.AWGAIN						-0.0;						# 
+HOCtr.CFG.DYNAMIC.APPLY_MAPS_HOLDOFF_SECONDS	3.0;						# slow loop, so don't make it too short
+HOCtr.CFG.DYNAMIC.TTGAIN						1.0;						#
+HOCtr.CFG.DYNAMIC.SMA_ENABLE					0;
+HOCtr.CFG.DYNAMIC.PRA_ENABLE					0;
+HOCtr.CFG.DYNAMIC.PRA_2ND_ITERATION				0;				
+HOCtr.CFG.DYNAMIC.PRA_2ND_ORDER					0;
+HOCtr.CFG.DYNAMIC.AWF_ENABLE					0;
+HOCtr.CFG.DYNAMIC.SMA_THRESHOLD					0.95;
+HOCtr.CFG.DYNAMIC.SMA_N_MODES					7;
+HOCtr.CFG.DYNAMIC.PRA_PISTON_REFERENCE			0.1;
+HOCtr.CFG.DYNAMIC.AWF_KERNEL_SIZE				3;
+HOCtr.CFG.DYNAMIC.SMA_BASIS						"HOCtr.SMA_BASIS";
+HOCtr.CFG.DYNAMIC.TT_TO_HO						"HOCtr.TT_TO_HO";
+HOCtr.CFG.DYNAMIC.HO_TO_TT						"HOCtr.HO_TO_TT";
+HOCtr.CFG.DYNAMIC.PRA_PISTON_MODE				"HOCtr.PRA_PISTON_MODE";
+HOCtr.CFG.DYNAMIC.PRA_PISTON_PROJECTION			"HOCtr.PRA_PISTON_PROJECTION";
+HOCtr.CFG.DYNAMIC.PRA_PISTON_PROJECTION2		"HOCtr.PRA_PISTON_PROJECTION2";
+HOCtr.CFG.DYNAMIC.AWF_IM_KERNEL					"HOCtr.AWF_IM_KERNEL";

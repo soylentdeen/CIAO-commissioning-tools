@@ -1,0 +1,12 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT									"HODMRecorder.CFG.DYNAMIC";
+
+HODMRecorder.CFG.DYNAMIC.FILE_DIRNAME		"/diska/data/SPARTA";
+HODMRecorder.CFG.DYNAMIC.FILE_BASENAME		"HODMDisturbData";
+HODMRecorder.CFG.DYNAMIC.REQUESTED_FRAMES	0;
+HODMRecorder.CFG.DYNAMIC.CREATE_LINK            0;
+

@@ -1,0 +1,15 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT									"LoopConcentr.CFG.DYNAMIC";
+
+LoopConcentr.CFG.DYNAMIC.ALIGN_FC			1;
+LoopConcentr.CFG.DYNAMIC.ALIGN_WINDOW           10;
+LoopConcentr.CFG.DYNAMIC.CHECK_FC			1;
+LoopConcentr.CFG.DYNAMIC.PUBLISH_AVG_FRAME	0;
+
+
+
+

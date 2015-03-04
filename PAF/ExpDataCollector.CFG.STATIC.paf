@@ -1,0 +1,10 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT									"ExpDataCollector.CFG.STATIC";
+
+ExpDataCollector.CFG.STATIC.DATA_DIR		"$INS_ROOT/SYSTEM/DETDATA";
+ExpDataCollector.CFG.STATIC.OLDB_KEYWORDS	"ExpDataCollector.OLDB_KEYWORDS";
+ExpDataCollector.CFG.STATIC.CDMS_KEYWORDS	"ExpDataCollector.CDMS_KEYWORDS";

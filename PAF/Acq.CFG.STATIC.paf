@@ -1,0 +1,33 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT								"Acq.CFG.STATIC";	# 
+Acq.CFG.STATIC.NDET			1; # 
+Acq.CFG.STATIC.SIM_WS_ONLY                      0; #  simulation flag global
+Acq.CFG.STATIC.DET1.ENDIANITY			"BIG";				# 
+Acq.CFG.STATIC.DET1.SIM_WS_ONLY                 0; #  simulation flag for particular detector
+Acq.CFG.STATIC.DET1.DETTYPE				"eAPD";			# 
+Acq.CFG.STATIC.DET1.DRIVER				"$RTB1_HOST:7324";	#
+Acq.CFG.STATIC.DET1.RTDFDEPTH0			3000;					# 
+Acq.CFG.STATIC.DET1.RTDFDEPTH1			3000;					# 
+Acq.CFG.STATIC.DET1.RTDFDEPTH2			3000;					# 
+Acq.CFG.STATIC.DET1.RTDFPORT0			8000;				# 
+Acq.CFG.STATIC.DET1.RTDFPORT1			8001;				# 
+Acq.CFG.STATIC.DET1.RTDFPORT2			8002;				# 
+Acq.CFG.STATIC.DET1.SHTYPE				"SH99GRTM";				# SH99GRTM, SH99GAITM
+Acq.CFG.STATIC.DET1.WPUTYPE				"SW";   			# 
+Acq.CFG.STATIC.DET1.SIMNBFRAMES			5;     				# 
+Acq.CFG.STATIC.DET1.MAPLOCATION			"Acq.DET1.MAPS";	# location of maps
+
+Acq.CFG.STATIC.AUX_PUBLISHER.ENABLED	1;
+Acq.CFG.STATIC.AUX_PUBLISHER.PORT		9001;
+Acq.CFG.STATIC.AUX_PUBLISHER.FIFODEPTH	10;
+
+# unused but necessary		
+Acq.CFG.STATIC.DET1.FPGACODE			"<null>";			# Not used
+Acq.CFG.STATIC.DET1.READOUTMODE			"<null>";			# Not applicable to Vis-SWPU (to be removed)
+Acq.CFG.STATIC.DET1.FIRMWAREID			"<null>";			# Not used
+Acq.CFG.STATIC.DET1.NUMDIT				1;					# Not applicable to Vis-SWPU (to be removed)
+Acq.CFG.STATIC.DET1.DITSIGN				1;       			# Not applicable to Vis-SWPU (to be removed)

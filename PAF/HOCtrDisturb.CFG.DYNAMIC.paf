@@ -1,0 +1,10 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Sep 23 17:32:56 UTC 2013";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT      "HOCtrDisturb.CFG.DYNAMIC";     #
+HOCtrDisturb.CFG.DYNAMIC.COMMAND_CYCLES		1;	# null
+HOCtrDisturb.CFG.DYNAMIC.CYCLES			1;	# null
+HOCtrDisturb.CFG.DYNAMIC.FILENAME		"";	# null
+HOCtrDisturb.CFG.DYNAMIC.FREQ_EST_TIMEOUT	5;	# null

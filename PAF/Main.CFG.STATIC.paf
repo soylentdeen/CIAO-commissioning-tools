@@ -1,0 +1,10 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Jan 18 13:24:42 2010";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT						"Main.CFG.STATIC";	# 
+
+Main.CFG.STATIC.INITALONE		1; # boolean forcing linear initialisation
+Main.CFG.STATIC.SUPPRESSCDMS	0; # suppess loading default modes
+

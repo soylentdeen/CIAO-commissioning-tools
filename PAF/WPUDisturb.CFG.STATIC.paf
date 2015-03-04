@@ -1,0 +1,9 @@
+PAF.HDR.START;                                 # Marks start of header
+PAF.TYPE       "SPARTA Configuration file";    # Type of parameter file
+PAF.DAYTIM     "Mon Sep 23 17:32:56 UTC 2013";     # Civil time for creation
+PAF.HDR.END;                                   # End of PAF header
+#----------------------------------------------------------------------
+CFG.OBJECT      "WPUDisturb.CFG.STATIC";     #
+WPUDisturb.CFG.STATIC.DISTURB_TOPIC		"SH9x9DisturbFrame";	# null
+WPUDisturb.CFG.STATIC.LOOP_TOPIC		"LoopFrame";	# null
+WPUDisturb.CFG.STATIC.MULTICAST_ADDRESS	"";	# null
