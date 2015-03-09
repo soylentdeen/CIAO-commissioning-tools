@@ -11,6 +11,7 @@ Recn.ACT_UNSCR_MAP, 62, 0, int32, -1.0, True
 Recn.REC1.CM, 62, 136, float32, 0.0, False
 Recn.SIMVECTOR, 1, 1360, float32, 0.0, False
 Recn.SUBAP_UNSCR_MAP, 1, 136, int32, 0.0, True
+RTC.PROJ_HODM_FOCUS, 1, 60, float32, 0.0, False
 CODE.MIRROR_HODM.QSPATTERN, 1, 60, float32, 0.0, False
 CODE.MIRROR_HODM.USERMAPPING, 1, 60, int32, 0.0, True
 HOCtr.ACT_POS_REF_MAP, 1, 60, float32, 0.0, False

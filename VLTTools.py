@@ -111,20 +111,33 @@ class VLTConnection( object ):
         self.sendCommand("msgSend \"\" spaccsServer EXEC \"-command HOCtr.update ALL\"")
 
 
-    """
+    #"""
     def calc_CommandMatrix(self, nFiltModes=20):
         self.CDMS.maps['Recn.REC1.CM'].replace(
                   SPARTATools.calculateCommandMatrix(
                          self.CDMS.maps['HORecnCalibrat.RESULT_IM'],
                          self.CDMS.maps['TTRecnCalibrat.RESULT.IM'],
                          nFiltModes))
-    """
+    #"""
 
+    """
     def calc_CommandMatrix(self, nFiltModes=20):
         self.modalBasis = SPARTATools.modalBasis(self.CDMS.maps['HORecnCalibrat.RESULT_IM'].data, self.CDMS.maps['TTRecnCalibrat.RESULT.IM'].data, nFiltModes)
         self.modalBasis.computeSystemControlMatrix()
-        sefl.
+        self.CDMS.maps['Recn.REC1.CM'].replace(self.modalBasis.CM)
+    """
         
+
+    def averageActuatorPositions(self):
+        outfile= self.datapath+"new_flat_14.fits"
+        SPARTATools.computeNewBestFlat(outfile)
+        command = "cdmsLoad -f "+outfile+" HOCtr.ACT_POS_REF_MAP --rename"
+        self.sendCommand(command)
+    
+    def averageIntensities(self):
+        outfile=self.datapath+"averageIntensities.fits"
+        SPARTATools.computeIntensities(outfile)
+
     def set_CommandMatrix(self):
         #self.transmitMap('Recn.REC1.CM')
         self.transmitMap('Recn.REC1.CM', update='Recn')
@@ -135,6 +148,12 @@ class VLTConnection( object ):
         ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
         ax.imshow(self.CDMS.maps['Recn.REC1.CM'].data)
         fig.savefig("CM.png")
+    
+    def disturb(self):
+        fname = self.datapath+"Disturbances/disturbanceFrame.fits"
+        SPARTATools.computeDisturbanceFrame(5, 2000, fname, range=0.2, max=0.3)
+        command = "spaciaortdftDisturbPubl -d HODM -f "+fname
+        self.sendCommand(command)
 
     def measure_HOIM(self, config=None):
         if config:

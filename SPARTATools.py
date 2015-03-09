@@ -82,6 +82,36 @@ def diagonalisation(A):
    M = M[:,sortindex]
    return (eigenvalue, M)
 
+def computeNewBestFlat(outfile):
+   datadir = "/diska/data/SPARTA/"
+   datafile = datadir+"Austin_14/Austin_14.fits"
+
+   data = pyfits.getdata(datafile)
+   avg = numpy.average(data.field(5), axis=0)
+   hdu = pyfits.PrimaryHDU(avg)
+   hdu.writeto(outfile, clobber=True)
+
+def computeIntensities(outfile):
+   datadir = "/diska/data/SPARTA/"
+   datafile= datadir+'hbonnet_cm/hbonnet_cm.fits'
+
+   data = pyfits.getdata(datafile)
+   intensities = data.field(3)
+   avg = numpy.average(intensities, axis=0)
+
+   hdu = pyfits.PrimaryHDU(avg)
+   hdu.writeto(outfile, clobber=True)
+
+def computeDisturbanceFrame(actNum, nFrames, filename, range=0.2, max=0.3):
+   nAct = 60
+   frame = numpy.zeros((nFrames, nAct), dtype=numpy.float32)
+   disturbance = numpy.random.randn(nframes)*range
+   disturbance[disturbance > max] = max
+   disturbance[disturbance < -max] = -max
+   frame[:,actNum] = disturbance
+   hdu = pyfits.PrimaryHDU(frame)
+   hdu.writeto(filename, clobber=True)
+
 class modalBasis ( object ):
    def __init__(self, HOIM, TTIM, nFilt):
        self.datapath = os.path.dirname(__file__)+'/Data/'
@@ -157,6 +187,7 @@ class modalBasis ( object ):
                       numpy.diag(1.0/numpy.sqrt(lam[0:self.nFilt])))
 
        self.createSMAbasis()
+       self.computeSystemControlMatrix()
 
    def createSMAbasis(self):
        m = self.filterOutPiston(numpy.identity(self.nHOAct))
