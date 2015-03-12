@@ -84,7 +84,7 @@ def diagonalisation(A):
 
 def computeNewBestFlat(outfile):
    datadir = "/diska/data/SPARTA/"
-   datafile = datadir+"Austin_14/Austin_14.fits"
+   datafile = datadir+"Amarillo_7/Amarillo_7.fits"
 
    data = pyfits.getdata(datafile)
    avg = numpy.average(data.field(5), axis=0)
@@ -100,6 +100,11 @@ def computeIntensities(outfile):
    avg = numpy.average(intensities, axis=0)
 
    hdu = pyfits.PrimaryHDU(avg)
+   hdu.writeto(outfile, clobber=True)
+
+def computeAITRefSlopes(outfile):
+   data = numpy.ones(136, dtype=numpy.float32)*3.5
+   hdu = pyfits.PrimaryHDU(data)
    hdu.writeto(outfile, clobber=True)
 
 def computeDisturbanceFrame(actNum, nFrames, filename, range=0.2, max=0.3):
@@ -171,7 +176,7 @@ class modalBasis ( object ):
        self.IM[:,0:self.nHOAct] = self.HOIM
        self.IM[:,self.nHOAct:self.nHOAct+self.nTTAct] = self.TTIM
 
-       # Compute the command Matri9x
+       # Compute the command Matrix
        self.M2S = numpy.dot(self.IM, self.M2V)  # Modal Interaction Matrix
        self.S2M = pseudoinv(self.M2S, 0)        # Modal Control Matrix
 

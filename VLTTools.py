@@ -111,7 +111,7 @@ class VLTConnection( object ):
         self.sendCommand("msgSend \"\" spaccsServer EXEC \"-command HOCtr.update ALL\"")
 
 
-    #"""
+    """
     def calc_CommandMatrix(self, nFiltModes=20):
         self.CDMS.maps['Recn.REC1.CM'].replace(
                   SPARTATools.calculateCommandMatrix(
@@ -120,16 +120,22 @@ class VLTConnection( object ):
                          nFiltModes))
     #"""
 
-    """
+    #"""
     def calc_CommandMatrix(self, nFiltModes=20):
         self.modalBasis = SPARTATools.modalBasis(self.CDMS.maps['HORecnCalibrat.RESULT_IM'].data, self.CDMS.maps['TTRecnCalibrat.RESULT.IM'].data, nFiltModes)
         self.modalBasis.computeSystemControlMatrix()
         self.CDMS.maps['Recn.REC1.CM'].replace(self.modalBasis.CM)
-    """
+        self.CDMS.maps['HOCtr.TT_TO_HO'].replace(self.modalBasis.TT2HO)
+        self.CDMS.maps['HOCtr.SMA_BASIS'].replace(self.modalBasis.SMAbasis)
+        self.CDMS.maps['HOCtr.AWF_IM_KERNEL'].replace(self.modalBasis.AWFbasis)
+        self.transmitMap('HOCtr.TT_TO_HO', update='HOCtr')
+        self.transmitMap('Recn.REC1.CM', update='Recn')
+        #self.CDMS.maps['Recn.REC1.CM'].replace(self.modalBasis.CM)
+    #"""
         
 
     def averageActuatorPositions(self):
-        outfile= self.datapath+"new_flat_14.fits"
+        outfile= self.datapath+"new_flat_16.fits"
         SPARTATools.computeNewBestFlat(outfile)
         command = "cdmsLoad -f "+outfile+" HOCtr.ACT_POS_REF_MAP --rename"
         self.sendCommand(command)
