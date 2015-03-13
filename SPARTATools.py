@@ -148,7 +148,8 @@ class modalBasis ( object ):
        self.TT2HO = self.filterOutPiston(TT2HO) 
 
        # Compute the reverse projection HO2TT
-       self.HO2TT = numpy.dot(TT2HO, pseudoinv(TT2HO,0))
+       #self.HO2TT = numpy.dot(TT2HO, pseudoinv(TT2HO,0))
+       self.HO2TT = numpy.dot(pseudoinv(self.TTIM,0), self.HOIM)
 
        # Compute modes as KL in the measurement space
        turb, eigss = self.KLbasisSlopesSpace()
