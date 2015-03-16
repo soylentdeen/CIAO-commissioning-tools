@@ -192,6 +192,7 @@ class modalBasis ( object ):
        self.AWFbasis = numpy.dot(mod[:,0:self.nFilt], 
                       numpy.diag(1.0/numpy.sqrt(lam[0:self.nFilt])))
 
+       print asdf
        self.createSMAbasis()
        self.computeSystemControlMatrix()
 
