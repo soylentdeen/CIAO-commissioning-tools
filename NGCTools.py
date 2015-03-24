@@ -111,6 +111,20 @@ class deformableMirror( object ):
             retval += amp*IF(x, y)[0]
         return retval
 
+class derotator( object ):
+    def __init__(self):
+        self.angle = 0.0
+
+    def setAngle(self, angle):
+        self.angle = angle
+        self.sine = numpy.sin(self.angle)
+        self.cosine = numpy.cos(self.angle)
+
+    def getMirrorPosition(self, x, y):
+        newx = x*self.cosine-y*self.sine
+        newy = x*self.sine+y*self.cosine
+        return newx, newy
+
 
 class detector( object ):
     """
@@ -130,6 +144,7 @@ class detector( object ):
                      innerRadius=beamSize/2.0*self.centObscScale,
                      outerRadius=beamSize/2.0)
         self.DM = deformableMirror(self)
+        self.derotator = derotator()
         self.nx = 72
         self.ny = 72
         self.spacing = 24.0 #microns  Is this value correct?
@@ -185,13 +200,14 @@ class detector( object ):
         self.scrambleFrame()
         self.centroids.append([])
 
-    def generateFrame(self, zern, pupil, actuatorPokes):
+    def generateFrame(self, zern, pupil, actuatorPokes, angle):
         """
         Generates an image seen by the detector of a wavefront described by
         the zernike coefficients in zern
 
         zern = [tip, tilt, defocus, astig1, astig2]
         """
+        self.derotator.setAngle(numpy.deg2rad(angle))
         self.pupil.setDecenter(pupil[0], pupil[1])
         centroids, amplitudes = self.calculateCentroids(zern, actuatorPokes)
         z = numpy.zeros((self.ny, self.nx))
@@ -248,7 +264,8 @@ class detector( object ):
 
     def calcWaveFront(self, x, y):
         wave = self.wavefront.calcWaveFront(x, y)
-        mirror = self.DM.calcPosition(x, y)
+        rotatedPosition = self.derotator.getMirrorPosition(x, y)
+        mirror = self.DM.calcPosition(rotatedPosition[0], rotatedPosition[1])
         return wave + mirror
 
     def saveFrames(self, filename):
