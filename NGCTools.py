@@ -1,7 +1,9 @@
 import numpy
 import scipy
 import pyfits
+import os
 from scipy.misc import factorial as fac
+import scipy.interpolate as interp
 
 def twoDgaussian(x, y, center, stdev, A):
     retval = A * (numpy.exp(-(x-center[0])**2.0/stdev[0])*
@@ -61,6 +63,55 @@ class zernikeMode(object):
         if (self.m < 0): return nc*self.zernike_rad(rho) * numpy.sin(-self.m*phi)
         return nc*self.zernike_rad(rho)
 
+class pupil( object ):
+    def __init__(self, x, y, innerRadius, outerRadius):
+        self.x = x
+        self.y = y
+        self.inrad2 = innerRadius**2.0
+        self.outrad2 = outerRadius**2.0
+
+    def calculateApertureIllumination(self, corner, size):
+        area = 0.0
+        illuminated = 0.0
+        for x in numpy.linspace(corner[0], corner[0]+size, 50):
+            for y in numpy.linspace(corner[1], corner[1]+size, 50):
+                area += 1.0
+                pythag = (self.x-x)**2.0 + (self.y - y)**2.0
+                if ( (pythag < self.outrad2) & (pythag > self.inrad2)):
+                    illuminated += 1.0
+        return illuminated/area
+
+    def getDecenter(self):
+        return self.x, self.y
+
+    def setDecenter(self, x, y):
+        self.x = x
+        self.y = y
+
+class deformableMirror( object ):
+    def __init__(self, parent):
+        self.nActuators = 60
+        self.influenceFunctions = pyfits.getdata(parent.datadir+'IF_cube_HR.fits')
+        nx = len(self.influenceFunctions[0][0])
+        ny = len(self.influenceFunctions[0])
+        xcoords = numpy.linspace(-888.0, 888.0, nx)
+        ycoords = numpy.linspace(-888.0, 888.0, ny)
+        self.interpFunctions = []
+        self.actuatorPositions = numpy.zeros(len(self.influenceFunctions))
+        for inflfunc in self.influenceFunctions:
+            self.interpFunctions.append(interp.interp2d(xcoords, ycoords,
+                            inflfunc, kind='cubic'))
+        
+    def setMirror(self, actPos):
+        self.actuatorPositions = actPos
+
+    def calcPosition(self, x, y):
+        retval = 0.0
+        for IF, amp in zip(self.interpFunctions, self.actuatorPositions):
+            retval += amp*IF(x, y)[0]
+        return retval
+
+
 class detector( object ):
     """
         The Detector class allows us to simulate the detector in the cryostat.
@@ -68,9 +119,17 @@ class detector( object ):
         be able to simulate the effects of simple Zernike aberations of the 
         wave front on the spots on the detector.
     """
-    def __init__(self):
+    def __init__(self, beamSize=1776.0):
+        # Calculates the relative size of the central obscuration (M2)
+        self.datadir = os.path.dirname(__file__)+'/Data/'
+        self.centObscScale = 1.116/8.00
+        self.beamSize = beamSize
         self.lenslet = lensletArray()
-        self.wavefront = waveFront()
+        self.wavefront = waveFront(beamSize=beamSize)
+        self.pupil = pupil(0.0, 0.0,
+                     innerRadius=beamSize/2.0*self.centObscScale,
+                     outerRadius=beamSize/2.0)
+        self.DM = deformableMirror(self)
         self.nx = 72
         self.ny = 72
         self.spacing = 24.0 #microns  Is this value correct?
@@ -81,9 +140,12 @@ class detector( object ):
         self.z = []
         self.frames = []
         self.centroids = []
-        self.scramblingMap = pyfits.getdata("../../Maps/Archive/scramblemap.fits")
-        self.unscramblingMap = pyfits.getdata("../../Maps/Archive/unscramblemap.fits")
-        self.windowMap = pyfits.getdata("../../Maps/Archive/windowmap.fits")
+        self.scramblingMap = pyfits.getdata(
+                            self.datadir+"scramblemap.fits")
+        self.unscramblingMap = pyfits.getdata(
+                            self.datadir+"unscramblemap.fits")
+        self.windowMap = pyfits.getdata(
+                            self.datadir+"windowmap.fits")
 
     def scrambleFrame(self):
         #"""
@@ -123,27 +185,19 @@ class detector( object ):
         self.scrambleFrame()
         self.centroids.append([])
 
-    def generateFrame(self, zern):
+    def generateFrame(self, zern, pupil, actuatorPokes):
         """
         Generates an image seen by the detector of a wavefront described by
         the zernike coefficients in zern
 
         zern = [tip, tilt, defocus, astig1, astig2]
         """
-        centroids = self.calculateCentroids(zern)
+        self.pupil.setDecenter(pupil[0], pupil[1])
+        centroids, amplitudes = self.calculateCentroids(zern, actuatorPokes)
         z = numpy.zeros((self.ny, self.nx))
         for xcoord in range(self.nx):
             for ycoord in range(self.ny):
-                """
-                #Subsamples the pixel an calculates average flux
-                pix = numpy.zeros((10, 10))
-                for x in numpy.arange(10):
-                    for y in numpy.arange(10):
-                        pix[x][y] = self.amplitude*sum(
-                             numpy.exp(-(self.xpix[xcoord]+x*self.spacing/10.0-centroids[:,0])**2.0/self.stdev[0])*numpy.exp(-(self.ypix[ycoord]+y*self.spacing/10.0-centroids[:,1])**2.0/self.stdev[1]) + numpy.exp(-(self.xpix[xcoord]+x*self.spacing/10.0-centroids[:,0])**2.0/self.stdev[0])*numpy.exp(-(self.ypix[ycoord]+(y+1.0)*self.spacing/10.0-centroids[:,1])**2.0/self.stdev[1])+numpy.exp(-(self.xpix[xcoord]+(x+1.0)*self.spacing/10.0-centroids[:,0])**2.0/self.stdev[0])*numpy.exp(-(self.ypix[ycoord]+y*self.spacing/10.0-centroids[:,1])**2.0/self.stdev[1]) + numpy.exp(-(self.xpix[xcoord]+(x+1.0)*self.spacing/10.0-centroids[:,0])**2.0/self.stdev[0])*numpy.exp(-(self.ypix[ycoord]+(y+1.0)*self.spacing/10.0-centroids[:,1])**2.0/self.stdev[1]))/4.0
-                z[ycoord][xcoord] = numpy.average(pix)
-                """
-                z[ycoord][xcoord] = self.amplitude*sum(
+                z[ycoord][xcoord] = sum(amplitudes*
                    numpy.exp(-(self.xpix[xcoord]+self.spacing/
                        2.0-centroids[:,0])**2.0/self.stdev[0])*
                    numpy.exp(-(self.ypix[ycoord]+self.spacing/
@@ -152,21 +206,24 @@ class detector( object ):
         self.scrambleFrame()
         self.centroids.append(centroids)
 
-    def calculateCentroids(self, zern):
+    def calculateCentroids(self, zern, actuatorPokes):
         """
             Calcualates the locations of the centroids under the given 
             Zernike coefficients
         """
         self.wavefront.setZern(zern)
+        self.DM.setMirror(actuatorPokes)
         dx = 10.0   # Microns
         dy = 10.0   # Microns
-        retval = []
+        centroids = []
+        intensities = []
+        DCx, DCy = self.pupil.getDecenter()  # Decenter of Pupil
         for c in self.lenslet.coordinates:
             # Calculates the partial derivatives
-            zxp = self.wavefront.calcWaveFront(c[0]+dx, c[1])
-            zxm = self.wavefront.calcWaveFront(c[0]-dx, c[1])
-            zyp = self.wavefront.calcWaveFront(c[0], c[1]+dy)
-            zym = self.wavefront.calcWaveFront(c[0], c[1]-dy)
+            zxp = self.calcWaveFront(c[0]+DCx+dx, c[1]+DCy)
+            zxm = self.calcWaveFront(c[0]+DCx-dx, c[1]+DCy)
+            zyp = self.calcWaveFront(c[0]+DCx, c[1]+DCy+dy)
+            zym = self.calcWaveFront(c[0]+DCx, c[1]+DCy-dy)
             delx = (zxp - zxm)/(2)
             dely = (zyp - zym)/(2)
 
@@ -180,9 +237,19 @@ class detector( object ):
             theta_y = scipy.arctan2(normaly, normalz)
             shift_x = scipy.tan(theta_x)*self.lenslet.fl
             shift_y = scipy.tan(theta_y)*self.lenslet.fl
-            retval.append([c[0]+shift_x, c[1]+shift_y])
+            centroids.append([c[0]+shift_x, c[1]+shift_y])
 
-        return numpy.array(retval)
+            intensities.append(self.pupil.calculateApertureIllumination(
+                               [c[0]-self.lenslet.spacing/2.0, 
+                               c[1]-self.lenslet.spacing/2.0],
+                               self.lenslet.spacing))
+
+        return numpy.array(centroids), numpy.array(intensities)
+
+    def calcWaveFront(self, x, y):
+        wave = self.wavefront.calcWaveFront(x, y)
+        mirror = self.DM.calcPosition(x, y)
+        return wave + mirror
 
     def saveFrames(self, filename):
         """
@@ -234,9 +301,9 @@ class lensletArray( object ):
 
 class waveFront( object ):
     """
-    This object describes the wavefront as it hits the detector
+    This object describes the wavefront as it hits the lenslet array
     """
-    def __init__(self, beamSize=1776.0):
+    def __init__(self, beamSize = 1776.0):
         self.beamSize = beamSize
         self.tip = zernikeMode(2, 0.00)
         self.tilt = zernikeMode(3, 0.00)
@@ -264,7 +331,14 @@ class waveFront( object ):
             value += zern.zernike(rho, phi)
         return value
 
+    def pokeActuator(self, x, y, InflFunc):
+        """
+            interpolates the value of an actuator poke at a certain x and y
+        """
+        return InflFunc(x, y)
 
+
+"""
 class frameBuffer( object ):
     def __init__(self, xoffset = 4.0, yoffset = 4.0):
         self.nx = 96
@@ -321,4 +395,5 @@ class frameBuffer( object ):
         hdu = pyfits.PrimaryHDU(self.centroids)
         hdu.writeto(filename, clobber=True)
 
+"""
 
