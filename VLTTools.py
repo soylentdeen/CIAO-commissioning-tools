@@ -141,11 +141,32 @@ class VLTConnection( object ):
         #self.CDMS.maps['Recn.REC1.CM'].replace(self.modalBasis.CM)
     #"""
         
+    def updateReferenceSlopes(self, filename):
+        self.CDMS.maps["Acq.DET1.REFSLP"].load(filename)
+        self.transmitMap("Acq.DET1.REFSLP", update='Acq')
 
-    def averageActuatorPositions(self):
+    def measureNewTTRefPositions(self, recordingName):
+        command = "msgSend \"\" spaccsServer EXEC \" -command TTCtr.closeLoop\""
+        self.sendCommand(command)
+        command = "msgSend \"\" spaccsServer EXEC \" -command LoopRecorder.run\""
+        self.sendCommand(command)
+        time.sleep(5.0)
+        command = "msgSend \"\" spaccsServer EXEC \" -command TTCtr.openLoop\""
+        self.sendCommand(command)
+        self.averageTTPositions(recordingName)
+
+    def averageActuatorPositions(self, recordingName):
         outfile= self.datapath+"new_flat_16.fits"
-        SPARTATools.computeNewBestFlat(outfile)
+        SPARTATools.computeNewBestFlat(outfile. recordingName)
         command = "cdmsLoad -f "+outfile+" HOCtr.ACT_POS_REF_MAP --rename"
+        self.sendCommand(command)
+
+    def averageTTPositions(self, recordingName):
+        outfile=self.datapath+"new_TT_flat.fits"
+        SPARTATools.computeNewTTFlat(outfile, recordingName)
+        command = "cdmsLoad -f "+outfile+" TTCtr.ACT_POS_REF_MAP --rename"
+        self.sendCommand(command)
+        command = "msgSend \"\" spaccsServer EXEC \" -command TTCtr.update ALL\""
         self.sendCommand(command)
     
     def averageIntensities(self):
@@ -172,6 +193,11 @@ class VLTConnection( object ):
     def measure_HOIM(self, config=None):
         if config:
             self.applyPAF(self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"])
+
+        command = "msgSend \"\" spaccsServer EXEC \" -command HOCtrUpload.run\""
+        self.sendCommand(command)
+        command = "msgSend \"\" spaccsServer EXEC \" -command HORecnCalibrat.update ALL\""
+        self.sendCommand(command)
         command = "msgSend \"\" spaccsServer EXEC \" -command HORecnCalibrat.run\""
         self.sendCommand(command)
         #command = "msgSend \"\" spaccsServer EXEC \" -command HORecnCalibrat.waitIdle\""
@@ -190,8 +216,10 @@ class VLTConnection( object ):
         command = "msgSend \"\" spaccsServer EXEC \" -command TTRecnCalibrat.run\""
         self.sendCommand(command)
 
-    def setup_HOIM(self, amplitude=0.1, noise=0.05, skip=0.01,
-                   period=0.5, cycles=1):
+    def setup_HOIM(self, amplitude=1.0, noise=0.05, skip=0.01,
+                   period=0.2, cycles=10):
+        self.CDMS.paf{"HORecnCalibrat.CFG.DYNAMIC"].update("ACTUATION_MATRIX", "HORecnCalibrat.USER_60")
+        self.CDMS.paf{"HORecnCalibrat.CFG.DYNAMIC"].update("ACTUATION_MATRIX_INV", "HORecnCalibrat.USER_INV_60")
         self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("TIME_UNIT",
                   "SECONDS")
         self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("WAVE_PERIOD",

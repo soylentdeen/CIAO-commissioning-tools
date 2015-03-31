@@ -3,6 +3,7 @@ import numpy
 #import matplotlib.pyplot as pyplot
 import pyfits
 import os
+import glob
 from scipy.linalg import *
 
 class framesViewer( object ):
@@ -83,11 +84,22 @@ def diagonalisation(A):
    return (eigenvalue, M)
 
 def computeNewBestFlat(outfile):
-   datadir = "/diska/data/SPARTA/"
-   datafile = datadir+"Amarillo_7/Amarillo_7.fits"
+   datadir = "/diska/data/SPARTA/30March2015/"
+   datafile = datadir+"polaris_8/polaris_8.fits"
 
    data = pyfits.getdata(datafile)
    avg = numpy.average(data.field(5), axis=0)
+   hdu = pyfits.PrimaryHDU(avg)
+   hdu.writeto(outfile, clobber=True)
+
+def computeNewTTFlat(outfile, recordingName):
+   datadir = "/diska/data/SPARTA/30March2015/"
+   datafiles = glob.glob(datadir+recordingName+'*')
+   nfiles = len(datafiles)
+   datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"
+
+   data = pyfits.getdata(datafile)
+   avg = numpy.average(data.field(6), axis=0)
    hdu = pyfits.PrimaryHDU(avg)
    hdu.writeto(outfile, clobber=True)
 
@@ -192,7 +204,6 @@ class modalBasis ( object ):
        self.AWFbasis = numpy.dot(mod[:,0:self.nFilt], 
                       numpy.diag(1.0/numpy.sqrt(lam[0:self.nFilt])))
 
-       print asdf
        self.createSMAbasis()
        self.computeSystemControlMatrix()
 
