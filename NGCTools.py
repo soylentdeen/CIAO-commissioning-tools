@@ -151,7 +151,7 @@ class detector( object ):
         self.xpix = (numpy.arange(self.nx)-self.nx/2.0)*self.spacing
         self.ypix = (numpy.arange(self.ny)-self.ny/2.0)*self.spacing
         self.stdev = (8.0*self.spacing, 8.0*self.spacing)
-        self.amplitude = 1000.0
+        self.flux = 1000.0
         self.z = []
         self.frames = []
         self.centroids = []
@@ -163,7 +163,7 @@ class detector( object ):
                             self.datadir+"windowmap.fits")
 
     def scrambleFrame(self):
-        #"""
+        """
         scrambledFrame = numpy.zeros(6912)
         flatframe = self.z[-1].ravel()
         for y, i in zip(flatframe, self.scramblingMap):
@@ -178,6 +178,7 @@ class detector( object ):
             scrambledFrame[i] = y
         #"""
 
+        #"""
         largeScrambledFrame = numpy.zeros(6912)
         j = 0
         for i in range(6912):
@@ -186,7 +187,8 @@ class detector( object ):
                 j += 1
 
 
-        #self.frames.append(largeScrambledFrame)
+        self.frames.append(largeScrambledFrame)
+        #"""
         
 
     def makeRamp(self):
@@ -213,7 +215,7 @@ class detector( object ):
         z = numpy.zeros((self.ny, self.nx))
         for xcoord in range(self.nx):
             for ycoord in range(self.ny):
-                z[ycoord][xcoord] = sum(amplitudes*
+                z[ycoord][xcoord] = self.flux*sum(amplitudes*
                    numpy.exp(-(self.xpix[xcoord]+self.spacing/
                        2.0-centroids[:,0])**2.0/self.stdev[0])*
                    numpy.exp(-(self.ypix[ycoord]+self.spacing/
