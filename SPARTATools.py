@@ -5,6 +5,7 @@ import pyfits
 import os
 import glob
 from scipy.linalg import *
+import warnings
 
 class framesViewer( object ):
     def __init__(self):
@@ -84,7 +85,7 @@ def diagonalisation(A):
    return (eigenvalue, M)
 
 def computeNewBestFlat(outfile, recordingName):
-   datadir = "/diska/data/SPARTA/30March2015/"
+   datadir = "/diska/data/SPARTA/2015-04-07/"
    datafiles = glob.glob(datadir+recordingName+"*")
    nfiles = len(datafiles)
    datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"
@@ -92,10 +93,12 @@ def computeNewBestFlat(outfile, recordingName):
    data = pyfits.getdata(datafile)
    avg = numpy.average(data.field(5), axis=0)
    hdu = pyfits.PrimaryHDU(avg)
-   hdu.writeto(outfile, clobber=True)
+   with warnings.catch_warnings():
+      warnings.simplefilter('ignore')
+      hdu.writeto(outfile, clobber=True)
 
 def computeNewTTFlat(outfile, recordingName):
-   datadir = "/diska/data/SPARTA/30March2015/"
+   datadir = "/diska/data/SPARTA/2015-04-07/"
    datafiles = glob.glob(datadir+recordingName+'*')
    nfiles = len(datafiles)
    datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"
@@ -105,7 +108,9 @@ def computeNewTTFlat(outfile, recordingName):
    avg = numpy.average(data.field(6), axis=0)
    print avg
    hdu = pyfits.PrimaryHDU(avg)
-   hdu.writeto(outfile, clobber=True)
+   with warnings.catch_warnings():
+      warnings.simplefilter('ignore')
+      hdu.writeto(outfile, clobber=True)
 
 def computeIntensities(outfile):
    datadir = "/diska/data/SPARTA/"
@@ -116,10 +121,12 @@ def computeIntensities(outfile):
    avg = numpy.average(intensities, axis=0)
 
    hdu = pyfits.PrimaryHDU(avg)
-   hdu.writeto(outfile, clobber=True)
+   with warnings.catch_warnings():
+      warnings.simplefilter('ignore')
+      hdu.writeto(outfile, clobber=True)
 
 def computeGradients(outfile, recordingName):
-   datadir = "/diska/data/SPARTA/30March2015/"
+   datadir = "/diska/data/SPARTA/2015-04-07/"
    datafiles = glob.glob(datadir+recordingName+'*')
    nfiles = len(datafiles)
    datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"
@@ -127,13 +134,17 @@ def computeGradients(outfile, recordingName):
    data = pyfits.getdata(datafile)
    avg = numpy.average(data.field(4), axis=0)+2.5
    hdu = pyfits.PrimaryHDU(avg)
-   hdu.writeto(outfile, clobber=True)
+   with warnings.catch_warnings():
+      warnings.simplefilter('ignore')
+      hdu.writeto(outfile, clobber=True)
 
 
 def computeAITRefSlopes(outfile):
    data = numpy.ones(136, dtype=numpy.float32)*3.5
    hdu = pyfits.PrimaryHDU(data)
-   hdu.writeto(outfile, clobber=True)
+   with warnings.catch_warnings():
+      warnings.simplefilter('ignore')
+      hdu.writeto(outfile, clobber=True)
 
 def computeHODisturbanceFrame(nFrames, filename, rng=0.2, max=0.3, disturbType="SINE", period=40.0, actNum=5):
    nAct = 60
@@ -147,7 +158,9 @@ def computeHODisturbanceFrame(nFrames, filename, rng=0.2, max=0.3, disturbType="
    disturbance[disturbance < -max] = -max
    frame[:,actNum] = disturbance
    hdu = pyfits.PrimaryHDU(frame)
-   hdu.writeto(filename, clobber=True)
+   with warnings.catch_warnings():
+      warnings.simplefilter('ignore')
+      hdu.writeto(filename, clobber=True)
 
 def computeTTDisturbanceFrame(nFrames, filename, p1, p2):
    nAct = 2
@@ -157,7 +170,9 @@ def computeTTDisturbanceFrame(nFrames, filename, p1, p2):
    frame[nFrames/2:,0] =p2[0]
    frame[nFrames/2:,1] =p2[1]
    hdu=pyfits.PrimaryHDU(frame)
-   hdu.writeto(filename, clobber=True)
+   with warnings.catch_warnings():
+      warnings.simplefilter('ignore')
+      hdu.writeto(filename, clobber=True)
 
 
 class modalBasis ( object ):
@@ -186,7 +201,7 @@ class modalBasis ( object ):
        return offsets
 
    def computeNewBestFlat(outfile, recordingName):
-       datadir = "/diska/data/SPARTA/30March2015/"
+       datadir = "/diska/data/SPARTA/2015-04-07/"
        datafiles = glob.glob(datadir+recordingName+"*")
        nfiles = len(datafiles)
        datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"
@@ -194,7 +209,9 @@ class modalBasis ( object ):
        data = pyfits.getdata(datafile)
        avg = numpy.average(data.field(5), axis=0)
        hdu = pyfits.PrimaryHDU(avg)
-       hdu.writeto(outfile, clobber=True)
+       with warnings.catch_warnings():
+          warnings.simplefilter('ignore')
+          hdu.writeto(outfile, clobber=True)
 
    def createModalBasis(self):
        # Generalized inverse of the High-Order Interaction Matrix

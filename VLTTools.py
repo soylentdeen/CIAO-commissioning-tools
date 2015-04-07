@@ -164,8 +164,8 @@ class VLTConnection( object ):
         
     def updateRefSlopes(self, x, y):
         slopes = numpy.zeros(136)
-        slopes[:,0::2] += x
-        slopes[:,1::2] += y
+        slopes[0::2] += x
+        slopes[1::2] += y
         self.CDMS.maps["Acq.DET1.REFSLP"].replace(slopes)
         self.transmitMap("Acq.DET1.REFSLP", update='Acq')
 
@@ -183,6 +183,9 @@ class VLTConnection( object ):
         self.transmitMap("Acq.DET1.REFSLP", update='Acq')
 
     def measureNewTTRefPositions(self, recordingName):
+        command = "msgSend \"\" spaccsServer EXEC \" -command HOCtr.openLoop\""
+        self.sendCommand(command)
+        time.sleep(2.0)
         command = "msgSend \"\" spaccsServer EXEC \" -command TTCtr.closeLoop\""
         self.sendCommand(command)
         time.sleep(5.0)
@@ -265,7 +268,7 @@ class VLTConnection( object ):
         self.sendCommand(command)
 
     def setup_HOIM(self, amplitude=1.0, noise=0.05, skip=0.05,
-                   period=0.2, mode_cycles=1, cycles=5):
+                   period=0.2, mode_cycles=1, cycles=3):
         self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("ACTUATION_MATRIX", "HORecnCalibrat.USER_60")
         self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("ACTUATION_MATRIX_INV", "HORecnCalibrat.USER_INV_60")
         self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("TIME_UNIT",
