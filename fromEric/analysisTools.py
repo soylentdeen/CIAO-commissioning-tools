@@ -7,7 +7,7 @@ Created on Mon Mar 16 13:46:54 2015
 
 import pyfits
 import numpy as np
-#import gral_createModalBasis
+import gral_createModalBasis
 
 import matplotlib.pyplot as plt
 
@@ -22,7 +22,7 @@ def checkSMAandCo(path, filename):
     """
 
     # reading data
-    a = pyfits.getdata(path+'/'+'FtWorth_2.fits')
+    a = pyfits.getdata(path+'/'+filename)
     vHO = a.field(5).T
     vTT = a.field(6).T
     slopes = a.field(4).T
@@ -52,11 +52,10 @@ def checkSMAandCo(path, filename):
     slopes = slopes[:,1:]          # drop first frame
 
     # cutting data set to avoid the beginning, which is openloop
-    Nstart = 1111
+    Nstart = 0
     dvHO = dvHO[:,Nstart:]
     dvTT = dvTT[:,Nstart:]
     slopes = slopes[:,Nstart:]
-
 
     # Here i'm trying to re-generate the command increments that
     # occured during the closed loop, and see how well they match the

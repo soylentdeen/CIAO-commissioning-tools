@@ -741,7 +741,7 @@ delta = np.dot(fi.reshape((60,64*64)),fi.reshape((60,64*64)).T)
 # AITs.
 # The HO matrix is stored in FITS as NAXIS1=60, NAXIS2=136.
 # In python the HO matrix is read as (136,60)
-mypath = '/home/egendron/Projets/GRAVITY/SVN_Packages/'
+mypath = '/diska/home/ciaomgr/data/'
 miaHO = pyfits.getdata(mypath+'HORecnCalibrat.RESULT_IM.fits')
 miaTT = pyfits.getdata(mypath+'TTRecnCalibrat.RESULT.IM.fits')
 delta = pyfits.getdata(mypath+'delta_MACAO.fits')

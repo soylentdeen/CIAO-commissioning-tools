@@ -83,9 +83,11 @@ def diagonalisation(A):
    M = M[:,sortindex]
    return (eigenvalue, M)
 
-def computeNewBestFlat(outfile):
+def computeNewBestFlat(outfile, recordingName):
    datadir = "/diska/data/SPARTA/30March2015/"
-   datafile = datadir+"polaris_8/polaris_8.fits"
+   datafiles = glob.glob(datadir+recordingName+"*")
+   nfiles = len(datafiles)
+   datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"
 
    data = pyfits.getdata(datafile)
    avg = numpy.average(data.field(5), axis=0)
@@ -98,8 +100,10 @@ def computeNewTTFlat(outfile, recordingName):
    nfiles = len(datafiles)
    datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"
 
+   print datafile
    data = pyfits.getdata(datafile)
    avg = numpy.average(data.field(6), axis=0)
+   print avg
    hdu = pyfits.PrimaryHDU(avg)
    hdu.writeto(outfile, clobber=True)
 
@@ -114,20 +118,47 @@ def computeIntensities(outfile):
    hdu = pyfits.PrimaryHDU(avg)
    hdu.writeto(outfile, clobber=True)
 
+def computeGradients(outfile, recordingName):
+   datadir = "/diska/data/SPARTA/30March2015/"
+   datafiles = glob.glob(datadir+recordingName+'*')
+   nfiles = len(datafiles)
+   datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"
+
+   data = pyfits.getdata(datafile)
+   avg = numpy.average(data.field(4), axis=0)+2.5
+   hdu = pyfits.PrimaryHDU(avg)
+   hdu.writeto(outfile, clobber=True)
+
+
 def computeAITRefSlopes(outfile):
    data = numpy.ones(136, dtype=numpy.float32)*3.5
    hdu = pyfits.PrimaryHDU(data)
    hdu.writeto(outfile, clobber=True)
 
-def computeDisturbanceFrame(actNum, nFrames, filename, range=0.2, max=0.3):
+def computeHODisturbanceFrame(nFrames, filename, rng=0.2, max=0.3, disturbType="SINE", period=40.0, actNum=5):
    nAct = 60
    frame = numpy.zeros((nFrames, nAct), dtype=numpy.float32)
-   disturbance = numpy.random.randn(nframes)*range
+   if disturbType=="RANDOM":
+       disturbance = numpy.random.randn(nframes)*rng
+   elif disturbType=="SINE":
+       t = numpy.arange(nFrames)
+       disturbance = numpy.sin(t/period*2.0*3.14159)*rng
    disturbance[disturbance > max] = max
    disturbance[disturbance < -max] = -max
    frame[:,actNum] = disturbance
    hdu = pyfits.PrimaryHDU(frame)
    hdu.writeto(filename, clobber=True)
+
+def computeTTDisturbanceFrame(nFrames, filename, p1, p2):
+   nAct = 2
+   frame = numpy.zeros((nFrames, nAct), dtype=numpy.float32)
+   frame[0:nFrames/2,0]=p1[0]
+   frame[0:nFrames/2,1]=p1[1]
+   frame[nFrames/2:,0] =p2[0]
+   frame[nFrames/2:,1] =p2[1]
+   hdu=pyfits.PrimaryHDU(frame)
+   hdu.writeto(filename, clobber=True)
+
 
 class modalBasis ( object ):
    def __init__(self, HOIM, TTIM, nFilt):
@@ -142,6 +173,28 @@ class modalBasis ( object ):
        self.nTTAct = 2    # Number of Tip/Tilt Actuators
        self.nSubap = 136   # Number of Sub-Apertures * 2
        self.createModalBasis()
+       self.mirrorZern = pyfits.getdata(self.datapath+"Zernike.fits")
+
+   def getZernikeOffsets(self, coeffs):
+       offsets = numpy.zeros(60)
+       for i in range(len(coeffs)):
+           print self.mirrorZern[i,:]
+           raw_input()
+           offsets += coeffs[i]*self.mirrorZern[i,:]
+
+       print numpy.max(numpy.abs(offsets))
+       return offsets
+
+   def computeNewBestFlat(outfile, recordingName):
+       datadir = "/diska/data/SPARTA/30March2015/"
+       datafiles = glob.glob(datadir+recordingName+"*")
+       nfiles = len(datafiles)
+       datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"
+
+       data = pyfits.getdata(datafile)
+       avg = numpy.average(data.field(5), axis=0)
+       hdu = pyfits.PrimaryHDU(avg)
+       hdu.writeto(outfile, clobber=True)
 
    def createModalBasis(self):
        # Generalized inverse of the High-Order Interaction Matrix

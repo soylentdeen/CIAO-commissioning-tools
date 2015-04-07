@@ -11,6 +11,16 @@ import SPARTATools
 import scipy
 import matplotlib.pyplot as pyplot
 
+class FieldLens( object ):
+    def __init__(self, parent):
+        self.x = 0.0
+        self.y = 0.0
+        self.parent = parent
+    
+    def initialize(self):
+        command = ""
+        self.parent.sendCommand(command)
+
 class VLTConnection( object ):
     """
     VLTConnection:  This object allows python to log into a computer
@@ -26,6 +36,7 @@ class VLTConnection( object ):
         self.sim = simulate
         self.modalBasis = None
         logging.basicConfig(level=logging.DEBUG)
+        #self.fieldLens = FieldLens()
 
     def simulate(self):
         self.sim = True
@@ -84,9 +95,19 @@ class VLTConnection( object ):
             command = "msgSend \"\" spaccsServer EXEC \" -command "+update+".update ALL\""
             self.sendCommand(command)
         
+    def zeroMap(self, mapName):
+        self.CDMS.maps[mapName].scale(0.0)
+        self.transmitMap(mapName)
+
     def mirrorCDMS(self):
         for mapname in self.CDMS.maps.keys():
             self.updateMap(mapname)
+
+    def applyZernike(self, coeffs):
+        self.updateMap("HOCtr.ACT_POS_REF_MAP")
+        offsets = self.modalBasis.getZernikeOffsets(coeffs)
+        self.CDMS.maps["HOCtr.ACT_POS_REF_MAP"].delta(offsets)
+        self.transmitMap("HOCtr.ACT_POS_REF_MAP", update="HOCtr")
 
     def set_Tip(self, tip):
         self.CDMS.maps['TTCtr.ACT_POS_REF_MAP'].data[0][0] = tip
@@ -141,6 +162,22 @@ class VLTConnection( object ):
         #self.CDMS.maps['Recn.REC1.CM'].replace(self.modalBasis.CM)
     #"""
         
+    def updateRefSlopes(self, x, y):
+        slopes = numpy.zeros(136)
+        slopes[:,0::2] += x
+        slopes[:,1::2] += y
+        self.CDMS.maps["Acq.DET1.REFSLP"].replace(slopes)
+        self.transmitMap("Acq.DET1.REFSLP", update='Acq')
+
+    def replaceSlopesWithCurrent(self):
+        recordingName="BetaPic"
+        outfile="gradients.fits"
+        command= "msgSend \"\" spaccsServer EXEC \" -command LoopRecorder.run\""
+        self.sendCommand(command)
+        time.sleep(2.0)
+        SPARTATools.computeGradients(outfile, recordingName)
+        self.updateReferenceSlopes(outfile)
+
     def updateReferenceSlopes(self, filename):
         self.CDMS.maps["Acq.DET1.REFSLP"].load(filename)
         self.transmitMap("Acq.DET1.REFSLP", update='Acq')
@@ -148,16 +185,20 @@ class VLTConnection( object ):
     def measureNewTTRefPositions(self, recordingName):
         command = "msgSend \"\" spaccsServer EXEC \" -command TTCtr.closeLoop\""
         self.sendCommand(command)
-        command = "msgSend \"\" spaccsServer EXEC \" -command LoopRecorder.run\""
-        self.sendCommand(command)
         time.sleep(5.0)
+        print "Recording Frames"
+        command= "msgSend \"\" spaccsServer EXEC \" -command LoopRecorder.run\""
+        self.sendCommand(command)
+        time.sleep(2.0)
+        print "Opening Loop"
         command = "msgSend \"\" spaccsServer EXEC \" -command TTCtr.openLoop\""
         self.sendCommand(command)
+        time.sleep(2.0)
         self.averageTTPositions(recordingName)
 
     def averageActuatorPositions(self, recordingName):
         outfile= self.datapath+"new_flat_16.fits"
-        SPARTATools.computeNewBestFlat(outfile. recordingName)
+        SPARTATools.computeNewBestFlat(outfile, recordingName)
         command = "cdmsLoad -f "+outfile+" HOCtr.ACT_POS_REF_MAP --rename"
         self.sendCommand(command)
 
@@ -184,18 +225,25 @@ class VLTConnection( object ):
         ax.imshow(self.CDMS.maps['Recn.REC1.CM'].data)
         fig.savefig("CM.png")
     
-    def disturb(self):
+    def disturbHO(self, disturbType="SINE", rng=0.5, max=0.95, period=40.0, actNum=5):
         fname = self.datapath+"Disturbances/disturbanceFrame.fits"
-        SPARTATools.computeDisturbanceFrame(5, 2000, fname, range=0.2, max=0.3)
-        command = "spaciaortdftDisturbPubl -d HODM -f "+fname
+        SPARTATools.computeHODisturbanceFrame(20000,fname, rng=rng, max=max, disturbType=disturbType, period=period, actNum=actNum)
+        command = "spaciaortdfwDisturbPubl -d HODM -f "+fname
+        self.sendCommand(command)
+
+    def disturbTT(self):
+        fname = self.datapath+"Disturbances/disturbanceTTFrame.fits"
+        amp = 0.1
+        SPARTATools.computeTTDisturbanceFrame(100, fname, [amp, 0.0], [-amp, 0.0])
+        command = "spaciaortdfwDisturbPubl -d ITTM -f "+fname+" -m 1000"
         self.sendCommand(command)
 
     def measure_HOIM(self, config=None):
         if config:
             self.applyPAF(self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"])
 
-        command = "msgSend \"\" spaccsServer EXEC \" -command HOCtrUpload.run\""
-        self.sendCommand(command)
+        #command = "msgSend \"\" spaccsServer EXEC \" -command HOCtrUpload.run\""
+        #self.sendCommand(command)
         command = "msgSend \"\" spaccsServer EXEC \" -command HORecnCalibrat.update ALL\""
         self.sendCommand(command)
         command = "msgSend \"\" spaccsServer EXEC \" -command HORecnCalibrat.run\""
@@ -207,7 +255,7 @@ class VLTConnection( object ):
         while complete < 100:
             wait = self.sendCommand(command, response=True)
             complete = numpy.float(wait.split()[-1])
-            print complete
+            #print complete
             time.sleep(5.0)
 
     def measure_TTIM(self, config=None):
@@ -216,10 +264,10 @@ class VLTConnection( object ):
         command = "msgSend \"\" spaccsServer EXEC \" -command TTRecnCalibrat.run\""
         self.sendCommand(command)
 
-    def setup_HOIM(self, amplitude=1.0, noise=0.05, skip=0.01,
-                   period=0.2, cycles=10):
-        self.CDMS.paf{"HORecnCalibrat.CFG.DYNAMIC"].update("ACTUATION_MATRIX", "HORecnCalibrat.USER_60")
-        self.CDMS.paf{"HORecnCalibrat.CFG.DYNAMIC"].update("ACTUATION_MATRIX_INV", "HORecnCalibrat.USER_INV_60")
+    def setup_HOIM(self, amplitude=1.0, noise=0.05, skip=0.05,
+                   period=0.2, mode_cycles=1, cycles=5):
+        self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("ACTUATION_MATRIX", "HORecnCalibrat.USER_60")
+        self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("ACTUATION_MATRIX_INV", "HORecnCalibrat.USER_INV_60")
         self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("TIME_UNIT",
                   "SECONDS")
         self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("WAVE_PERIOD",
@@ -230,6 +278,7 @@ class VLTConnection( object ):
                   noise)
         self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("SKIP_TIME", skip)
         self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("CYCLES", cycles)
+        self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("MODE_CYCLES", mode_cycles)
     
     def get_HOIM(self):
         self.updateMap('HORecnCalibrat.RESULT_IM')
@@ -291,6 +340,9 @@ class CDMS_Map( object ):
         
     def revert(self):
         self.data = self.data_template.copy()
+
+    def delta(self, offsets):
+        self.data += offsets
 
     def scale(self, factor):
         self.data *= factor
