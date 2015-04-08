@@ -84,11 +84,8 @@ def diagonalisation(A):
    M = M[:,sortindex]
    return (eigenvalue, M)
 
-def computeNewBestFlat(outfile, recordingName):
-   datadir = "/diska/data/SPARTA/2015-04-08/"
-   datafiles = glob.glob(datadir+recordingName+"*")
-   nfiles = len(datafiles)
-   datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"
+def computeNewBestFlat(outfile, datadir, recordingName):
+   datafile = sorted(glob.glob(datadir+recordingName+'*/*.fits'), key=os.path.getmtime)[-1]
 
    data = pyfits.getdata(datafile)
    avg = numpy.average(data.field(5), axis=0)
@@ -97,13 +94,9 @@ def computeNewBestFlat(outfile, recordingName):
       warnings.simplefilter('ignore')
       hdu.writeto(outfile, clobber=True)
 
-def computeNewTTFlat(outfile, recordingName):
-   datadir = "/diska/data/SPARTA/2015-04-08/"
-   datafiles = glob.glob(datadir+recordingName+'*')
-   nfiles = len(datafiles)
-   datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"
+def computeNewTTFlat(outfile, datadir, recordingName):
+   datafile = sorted(glob.glob(datadir+recordingName+'*/*.fits'), key=os.path.getmtime)[-1]
 
-   print datafile
    data = pyfits.getdata(datafile)
    avg = numpy.average(data.field(6), axis=0)
    print avg
@@ -112,9 +105,8 @@ def computeNewTTFlat(outfile, recordingName):
       warnings.simplefilter('ignore')
       hdu.writeto(outfile, clobber=True)
 
-def computeIntensities(outfile):
-   datadir = "/diska/data/SPARTA/"
-   datafile= datadir+'hbonnet_cm/hbonnet_cm.fits'
+def computeIntensities(outfile, datdir, recordingName):
+   datafile = sorted(glob.glob(datadir+recordingName+'*/*.fits'), key=os.path.getmtime)[-1]
 
    data = pyfits.getdata(datafile)
    intensities = data.field(3)
@@ -125,11 +117,8 @@ def computeIntensities(outfile):
       warnings.simplefilter('ignore')
       hdu.writeto(outfile, clobber=True)
 
-def computeGradients(outfile, recordingName):
-   datadir = "/diska/data/SPARTA/2015-04-08/"
-   datafiles = glob.glob(datadir+recordingName+'*')
-   nfiles = len(datafiles)
-   datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"
+def computeGradients(outfile, datadir, recordingName):
+   datafile = sorted(glob.glob(datadir+recordingName+'*/*.fits'), key=os.path.getmtime)[-1]
 
    data = pyfits.getdata(datafile)
    avg = numpy.average(data.field(4), axis=0)+2.5
@@ -176,8 +165,11 @@ def computeTTDisturbanceFrame(nFrames, filename, p1, p2):
 
 
 class modalBasis ( object ):
-   def __init__(self, HOIM, TTIM, nFilt):
-       self.datapath = os.path.dirname(__file__)+'/Data/'
+   def __init__(self, HOIM, TTIM, nFilt, datapath=None):
+       if datapath:
+           self.datapath=datapath
+       else:
+           self.datapath = os.path.dirname(__file__)+'/Data/'
        self.HOIM = HOIM
        self.TTIM = TTIM
        self.delta = pyfits.getdata(self.datapath+"delta_MACAO.fits")
@@ -193,15 +185,12 @@ class modalBasis ( object ):
    def getZernikeOffsets(self, coeffs):
        offsets = numpy.zeros(60)
        for i in range(len(coeffs)):
-           print self.mirrorZern[i,:]
-           raw_input()
            offsets += coeffs[i]*self.mirrorZern[i,:]
 
        print numpy.max(numpy.abs(offsets))
        return offsets
 
-   def computeNewBestFlat(outfile, recordingName):
-       datadir = "/diska/data/SPARTA/2015-04-08/"
+   def computeNewBestFlat(outfile, datadir, recordingName):
        datafiles = glob.glob(datadir+recordingName+"*")
        nfiles = len(datafiles)
        datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"

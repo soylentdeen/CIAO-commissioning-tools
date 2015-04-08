@@ -36,6 +36,26 @@ class Derotator( object ):
         self.encoder %= 360000
 
 
+class ParabolicMirror( object ):
+    def __init__(self, parent):
+        self.Tip = 0.0
+        self.Tilt = 0.0
+        self.parent = parent
+    
+    def initialize(self, Tip, Tilt):
+        self.Tip = Tip
+        self.Tilt = Tilt
+
+    def moveToTip(self, Tip):
+        command = "msgSend -n wci1ao ciiControl SETUP \" -function INS.PMTIP.ENC "+str(Tip)+" \""
+        self.parent.sendCommand(command)
+        self.Tip = Tip
+
+    def moveToTilt(self, Tilt):
+        command = "msgSend -n wci1ao ciiControl SETUP \" -function INS.PMTIL.ENC "+str(Tilt)+" \""
+        self.parent.sendCommand(command)
+        self.Tilt = Tilt
+
 class FieldLens( object ):
     def __init__(self, parent):
         self.x = 0.0
@@ -79,14 +99,18 @@ class VLTConnection( object ):
         - what else?
 
     """
-    def __init__(self, simulate=True):
-        self.datapath = os.path.expanduser('~')+'/data/'
+    def __init__(self, simulate=True, datapath=None):
+        if datapath:
+            self.datapath = datapath
+        else:
+            self.datapath = os.path.expanduser('~')+'/data/'
         self.CDMS = CDMS()
         self.sim = simulate
         self.modalBasis = None
         logging.basicConfig(level=logging.DEBUG)
         self.fieldLens = FieldLens(self)
         self.derotator = Derotator(self)
+        self.PM = ParabolicMirror(self)
 
     def simulate(self):
         self.sim = True
@@ -219,11 +243,9 @@ class VLTConnection( object ):
         self.CDMS.maps["Acq.DET1.REFSLP"].replace(slopes)
         self.transmitMap("Acq.DET1.REFSLP", update='Acq')
 
-    def replaceSlopesWithCurrent(self):
-        recordingName="BetaPic"
+    def replaceSlopesWithCurrent(self, rec5rdingName="BetaPic"):
+        self.measureCircularBuffer(recordingName=recordingName)
         outfile="gradients.fits"
-        command= "msgSend \"\" spaccsServer EXEC \" -command LoopRecorder.run\""
-        self.sendCommand(command)
         time.sleep(2.0)
         SPARTATools.computeGradients(outfile, recordingName)
         self.updateReferenceSlopes(outfile)
@@ -231,6 +253,16 @@ class VLTConnection( object ):
     def updateReferenceSlopes(self, filename):
         self.CDMS.maps["Acq.DET1.REFSLP"].load(filename)
         self.transmitMap("Acq.DET1.REFSLP", update='Acq')
+
+    def measureCircularBuffer(self, recordingName="Arcturus", nframes=100):
+        command = "msgSend \"\" spaccsServer SETUP \"-function LoopRecorder.FILE_BASENAME "+recordingName+"\""
+        self.sendCommand(command)
+        command = "msgSend \"\" spaccsServer SETUP \"-function LoopRecorder.FILE_DIRNAME "+self.datapath+"\""
+        self.sendCommand(command)
+        command = "msgSend \"\" spaccsServer SETUP \"-function LoopRecorder.REQUESTED_FRAMES "+str(nframes)+"\""
+        self.sendCommand(command)
+        command = "msgSend \"\" spaccsServer EXEC \" -command LoopRecorder.run\""
+        self.sendCommand(command)
 
     def measureNewTTRefPositions(self, recordingName):
         command = "msgSend \"\" spaccsServer EXEC \" -command HOCtr.openLoop\""
@@ -240,8 +272,7 @@ class VLTConnection( object ):
         self.sendCommand(command)
         time.sleep(5.0)
         print "Recording Frames"
-        command= "msgSend \"\" spaccsServer EXEC \" -command LoopRecorder.run\""
-        self.sendCommand(command)
+        self.measureCircularBuffer(recordingName=recordingName)
         time.sleep(2.0)
         print "Opening Loop"
         command = "msgSend \"\" spaccsServer EXEC \" -command TTCtr.openLoop\""
@@ -250,14 +281,14 @@ class VLTConnection( object ):
         self.averageTTPositions(recordingName)
 
     def averageActuatorPositions(self, recordingName):
-        outfile= self.datapath+"new_flat_16.fits"
-        SPARTATools.computeNewBestFlat(outfile, recordingName)
+        outfile= self.datapath+"new_flat.fits"
+        SPARTATools.computeNewBestFlat(outfile, self.datapath, recordingName)
         command = "cdmsLoad -f "+outfile+" HOCtr.ACT_POS_REF_MAP --rename"
         self.sendCommand(command)
 
     def averageTTPositions(self, recordingName):
         outfile=self.datapath+"new_TT_flat.fits"
-        SPARTATools.computeNewTTFlat(outfile, recordingName)
+        SPARTATools.computeNewTTFlat(outfile, self.datapath, recordingName)
         command = "cdmsLoad -f "+outfile+" TTCtr.ACT_POS_REF_MAP --rename"
         self.sendCommand(command)
         command = "msgSend \"\" spaccsServer EXEC \" -command TTCtr.update ALL\""
@@ -316,6 +347,12 @@ class VLTConnection( object ):
         self.fieldLens.moveToX(x)
         #Move in Y
         self.fieldLens.moveToY(y)
+
+    def movePM(self, Tip, Tilt):
+        #Move in X
+        self.PM.moveToTip(Tip)
+        #Move in Y
+        self.PM.moveToTilt(Tilt)
 
     def moveDerotator(self, angle):
         #Move to angle
