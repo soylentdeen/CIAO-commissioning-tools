@@ -22,6 +22,7 @@ for angle in range(0, 400, 40):
     ciao.moveDerotator(angle)
     print 'Moved to ', angle
 
+    ciao.measureCircularBuffer(fileName="derot_circbuff_"+str(angle)+".fits")
     time.sleep(0.5)
     ciao.setup_HOIM()
     ciao.measure_HOIM(config=True)

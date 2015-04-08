@@ -163,7 +163,7 @@ class detector( object ):
                             self.datadir+"windowmap.fits")
 
     def scrambleFrame(self):
-        """
+        #"""
         scrambledFrame = numpy.zeros(6912)
         flatframe = self.z[-1].ravel()
         for y, i in zip(flatframe, self.scramblingMap):
@@ -178,7 +178,7 @@ class detector( object ):
             scrambledFrame[i] = y
         #"""
 
-        #"""
+        """
         largeScrambledFrame = numpy.zeros(6912)
         j = 0
         for i in range(6912):
