@@ -11,6 +11,31 @@ import SPARTATools
 import scipy
 import matplotlib.pyplot as pyplot
 
+class Derotator( object ):
+    def __init__(self, parent):
+        self.angle = 0.0
+        self.encoder = 0
+        self.parent = parent
+
+    def initialize(self):
+        command = ""
+        self.parent.sendCommand(command)
+
+    def moveToAngle(self, angle):
+        command = "msgSend -n wci1ao ciiControl SETUP \" -function INS.DROT.ENC "+str(angle*1000)+" \""
+        self.parent.sendCommand(command)
+        self.angle = angle
+        self.encoder = angle*1000 % 360000
+
+    def moveAngleRel(self, deltaAngle):
+        command = "msgSend -n wci1ao ciiControl SETUP \" -function INS.DROT.ENCREL "+str(deltaAngle*1000)+" \""
+        self.parent.sendCommand(command)
+        self.angle += deltaAngle
+        self.angle %= 360.0
+        self.encoder += deltaAngle*1000
+        self.encoder %= 360000
+
+
 class FieldLens( object ):
     def __init__(self, parent):
         self.x = 0.0
@@ -20,6 +45,30 @@ class FieldLens( object ):
     def initialize(self):
         command = ""
         self.parent.sendCommand(command)
+
+    def moveToX(self, x):
+        newX = self.x
+        while newX != x:
+            difference = x - newX
+            sign = numpy.abs(difference)/difference
+            stepsize = sign*min( 10.0, numpy.abs(difference))
+            command = "msgSend -n wci1ao ciiControl SETUP \" -function INS.FLDL.DX "+str(stepsize)+" INS.FLDL.DY 0 \""
+            #print command
+            self.parent.sendCommand(command)
+            newX += stepsize
+        self.x = newX
+
+    def moveToY(self, y):
+        newY = self.y
+        while newY != y:
+            difference = y - newY
+            sign = numpy.abs(difference)/difference
+            stepsize = sign*min(10.0, numpy.abs(difference))
+            command = "msgSend -n wci1ao ciiControl SETUP \" -function INS.FLDL.DX 0 INS.FLDL.DY "+str(stepsize)+" \""
+            #print command
+            self.parent.sendCommand(command)
+            newY += stepsize
+        self.y = newY
 
 class VLTConnection( object ):
     """
@@ -36,7 +85,8 @@ class VLTConnection( object ):
         self.sim = simulate
         self.modalBasis = None
         logging.basicConfig(level=logging.DEBUG)
-        #self.fieldLens = FieldLens()
+        self.fieldLens = FieldLens(self)
+        self.derotator = Derotator(self)
 
     def simulate(self):
         self.sim = True
@@ -261,6 +311,16 @@ class VLTConnection( object ):
             #print complete
             time.sleep(5.0)
 
+    def moveFieldLens(self, x, y):
+        #Move in X
+        self.fieldLens.moveToX(x)
+        #Move in Y
+        self.fieldLens.moveToY(y)
+
+    def moveDerotator(self, angle):
+        #Move to angle
+        self.derotator.moveToAngle(angle)
+
     def measure_TTIM(self, config=None):
         if config:
             self.applyPAF(self.CDMS.paf["TTRecnCalibrat.CFG.DYNAMIC"])
@@ -307,9 +367,11 @@ class VLTConnection( object ):
             print("Error!  Invalid tap point!")
 
     def measureBackground(self, nframes):
+        self.changePixelTapPoint("RAW")
         command="msgSend \"\" CommandGateway EXEC \"AcqOptimiser.measureBackground "+str(nframes)+"\""
         self.sendCommand(command)
         self.updateMap('Acq.DET1.BACKGROUND')
+        self.changePixelTapPoint("CALIB")
 
 class CDMS_Map( object ):
     def __init__(self, name, ax1, ax2, dtype, filltype, bscale):

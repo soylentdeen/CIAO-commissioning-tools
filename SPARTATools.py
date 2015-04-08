@@ -85,7 +85,7 @@ def diagonalisation(A):
    return (eigenvalue, M)
 
 def computeNewBestFlat(outfile, recordingName):
-   datadir = "/diska/data/SPARTA/2015-04-07/"
+   datadir = "/diska/data/SPARTA/2015-04-08/"
    datafiles = glob.glob(datadir+recordingName+"*")
    nfiles = len(datafiles)
    datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"
@@ -98,7 +98,7 @@ def computeNewBestFlat(outfile, recordingName):
       hdu.writeto(outfile, clobber=True)
 
 def computeNewTTFlat(outfile, recordingName):
-   datadir = "/diska/data/SPARTA/2015-04-07/"
+   datadir = "/diska/data/SPARTA/2015-04-08/"
    datafiles = glob.glob(datadir+recordingName+'*')
    nfiles = len(datafiles)
    datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"
@@ -126,7 +126,7 @@ def computeIntensities(outfile):
       hdu.writeto(outfile, clobber=True)
 
 def computeGradients(outfile, recordingName):
-   datadir = "/diska/data/SPARTA/2015-04-07/"
+   datadir = "/diska/data/SPARTA/2015-04-08/"
    datafiles = glob.glob(datadir+recordingName+'*')
    nfiles = len(datafiles)
    datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"
@@ -201,7 +201,7 @@ class modalBasis ( object ):
        return offsets
 
    def computeNewBestFlat(outfile, recordingName):
-       datadir = "/diska/data/SPARTA/2015-04-07/"
+       datadir = "/diska/data/SPARTA/2015-04-08/"
        datafiles = glob.glob(datadir+recordingName+"*")
        nfiles = len(datafiles)
        datafile = datadir+recordingName+"_"+str(nfiles-1)+"/"+recordingName+"_"+str(nfiles-1)+".fits"
