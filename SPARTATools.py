@@ -94,6 +94,17 @@ def computeNewBestFlat(outfile, datadir, recordingName):
       warnings.simplefilter('ignore')
       hdu.writeto(outfile, clobber=True)
 
+def computeNewHOFlat(outfile, datadir, recordingName):
+   datafile = sorted(glob.glob(datadir+recordingName+'*/*.fits'), key=os.path.getmtime)[-1]
+
+   data = pyfits.getdata(datafile)
+   avg = numpy.average(data.field(5), axis=0)
+   print avg
+   hdu = pyfits.PrimaryHDU(avg)
+   with warnings.catch_warnings():
+      warnings.simplefilter('ignore')
+      hdu.writeto(outfile, clobber=True)
+
 def computeNewTTFlat(outfile, datadir, recordingName):
    datafile = sorted(glob.glob(datadir+recordingName+'*/*.fits'), key=os.path.getmtime)[-1]
 

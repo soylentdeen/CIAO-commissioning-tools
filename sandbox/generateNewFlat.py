@@ -4,6 +4,7 @@ import numpy
 import VLTTools
 import sys
 
-ciao = VLTTools.VLTConnection(simulate=False)
+ciao = VLTTools.VLTConnection(simulate=False, datapath = '/diska/data/SPARTA/2015-04-09/')
 
-ciao.averageActuatorPositions(sys.argv[1])
+#ciao.averageTTPositions(sys.argv[1])
+ciao.measureNewHORefPositions("Junk")

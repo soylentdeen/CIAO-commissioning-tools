@@ -62,12 +62,17 @@ class FieldLens( object ):
         self.y = 0.0
         self.parent = parent
     
-    def initialize(self):
-        command = ""
-        self.parent.sendCommand(command)
+    def initialize(self, x, y):
+        self.x = x
+        self.y = y
 
     def moveToX(self, x):
-        newX = self.x
+        dx = x - self.x
+        self.x = x
+        command = "msgSend -n wci1ao ciiControl SETUP \" -function INS.FLDL.DX "+str(dx)+" INS.FLDL.DY 0 \""
+        self.parent.sendCommand(command)
+        """
+        newY = self.y
         while newX != x:
             difference = x - newX
             sign = numpy.abs(difference)/difference
@@ -77,8 +82,14 @@ class FieldLens( object ):
             self.parent.sendCommand(command)
             newX += stepsize
         self.x = newX
+        """
 
     def moveToY(self, y):
+        dy = y - self.y
+        self.y = y
+        command = "msgSend -n wci1ao ciiControl SETUP \" -function INS.FLDL.DX 0 INS.FLDL.DY "+str(dy)+" \""
+        self.parent.sendCommand(command)
+        """
         newY = self.y
         while newY != y:
             difference = y - newY
@@ -89,6 +100,7 @@ class FieldLens( object ):
             self.parent.sendCommand(command)
             newY += stepsize
         self.y = newY
+        """
 
 class VLTConnection( object ):
     """
@@ -264,6 +276,32 @@ class VLTConnection( object ):
         command = "msgSend \"\" spaccsServer EXEC \" -command LoopRecorder.run\""
         self.sendCommand(command)
 
+    def measurePixelFrames(self, recordingName="Arcturus", nframes=100):
+        command = "msgSend \"\" spaccsServer SETUP \"-function PixelRecorder.FILE_BASENAME "+recordingName+"\""
+        self.sendCommand(command)
+        command = "msgSend \"\" spaccsServer SETUP \"-function PixelRecorder.FILE_DIRNAME "+self.datapath+"\""
+        self.sendCommand(command)
+        command = "msgSend \"\" spaccsServer SETUP \"-function PixelRecorder.REQUESTED_FRAMES "+str(nframes)+"\""
+        self.sendCommand(command)
+        command = "msgSend \"\" spaccsServer EXEC \" -command PixelRecorder.run\""
+        self.sendCommand(command)
+
+    def measureNewHORefPositions(self, recordingName):
+        command = "msgSend \"\" spaccsServer EXEC \" -command TTCtr.openLoop\""
+        self.sendCommand(command)
+        time.sleep(2.0)
+        command = "msgSend \"\" spaccsServer EXEC \" -command HOCtr.closeLoop\""
+        self.sendCommand(command)
+        time.sleep(5.0)
+        print "Recording Frames"
+        self.measureCircularBuffer(recordingName=recordingName)
+        time.sleep(2.0)
+        print "Opening Loop"
+        command = "msgSend \"\" spaccsServer EXEC \" -command HOCtr.openLoop\""
+        self.sendCommand(command)
+        time.sleep(2.0)
+        self.averageHOPositions(recordingName)
+
     def measureNewTTRefPositions(self, recordingName):
         command = "msgSend \"\" spaccsServer EXEC \" -command HOCtr.openLoop\""
         self.sendCommand(command)
@@ -292,6 +330,14 @@ class VLTConnection( object ):
         command = "cdmsLoad -f "+outfile+" TTCtr.ACT_POS_REF_MAP --rename"
         self.sendCommand(command)
         command = "msgSend \"\" spaccsServer EXEC \" -command TTCtr.update ALL\""
+        self.sendCommand(command)
+
+    def averageHOPositions(self, recordingName):
+        outfile=self.datapath+"new_HO_flat.fits"
+        SPARTATools.computeNewHOFlat(outfile, self.datapath, recordingName)
+        command = "cdmsLoad -f "+outfile+" HOCtr.ACT_POS_REF_MAP --rename"
+        self.sendCommand(command)
+        command = "msgSend \"\" spaccsServer EXEC \" -command HOCtr.update ALL\""
         self.sendCommand(command)
     
     def averageIntensities(self):
