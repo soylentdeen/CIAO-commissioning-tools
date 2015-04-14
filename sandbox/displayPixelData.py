@@ -26,17 +26,18 @@ fig = pyplot.figure(1)
 fig.clear()
 fig.show()
 ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
-imagePlot = ax.matshow(numpy.zeros((72,72)))
+imagePlot = ax.matshow(numpy.zeros((72,72)), vmin=0, vmax=300)
 i = 0
 next = 'j'
 print("j=+1, k=-1, q = quit")
 while (next != 'q'):
-    pixelFile = "/diska/data/SPARTA/2015-04-10/Derotator_7/derot_circbuff_"+str(i)+"_/derot_circbuff_"+str(i)+"_.fits"
+    pixelFile = "/home/deen/Data/GRAVITY/2015-04-10/Derotator/derot_circbuff_"+str(i)+"_/derot_circbuff_"+str(i)+"_.fits"
     pixelData = pyfits.getdata(pixelFile)
 
     t = pixelData.field(1)
     pixels = pixelData.field(3)
     image = numpy.average(pixels, axis=0)
+    imagePlot.set_clim(vmin= 0.0, vmax = numpy.max(image)/1.2)
     imagePlot.set_data(image.reshape(72,72))
     fig.canvas.draw()
     print i
