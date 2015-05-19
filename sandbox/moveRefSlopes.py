@@ -8,4 +8,4 @@ ciao = VLTTools.VLTConnection(simulate=False)
 #df = '/diska/home/ciaomgr/data/HOIM_test_data/RP2_0_0_.fits'
 
 #ciao.updateReferenceSlopes(df)
-ciao.updateRefSlopes(2.4, 2.4)
+ciao.updateRefSlopes(3.52, 3.39)

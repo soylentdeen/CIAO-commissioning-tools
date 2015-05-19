@@ -10,12 +10,22 @@ import time
 
 i = 0
 #datadir = "Derotator_test_data/"
-datadir = "/diska/data/SPARTA/2015-05-18/Derotator_1/"
+datadir = "/diska/data/SPARTA/2015-05-19/Derotator_20/"
 ciao = VLTTools.VLTConnection(simulate=False, datapath=datadir)
 
 #logfile = open(os.path.expanduser('~')+'/data/'+datadir+'logfile.dat', 'w')
 
 short = True
+
+ciao.moveDerotator(0.0)
+ciao.set_Tip(-0.017)
+ciao.set_Tilt(0.03)
+
+ciao.measureNewTTRefPositions("TWHydra")
+
+TT = [ciao.get_Tip(), ciao.get_Tilt()]
+
+print TT
 
 if short:
     angles = numpy.arange(10)*40.0

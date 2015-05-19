@@ -8,7 +8,7 @@ import glob
 import time
 import errno
 
-datadir = "/diska/data/SPARTA/2015-05-18/TTMap_1/"
+datadir = "/diska/data/SPARTA/2015-05-19/TTMap_2/"
 ciao = VLTTools.VLTConnection(simulate=False, datapath=datadir)
 
 #ciao.measureNewTTRefPositions("Alderan")
@@ -35,10 +35,14 @@ for line in pupilShiftFile:
     Tilt.append(float(l[1]))
 
 
-TT = numpy.array([0.176, -0.057])
 
-TTLoop = numpy.array([2.0, 5.0])
-DrotLoop = numpy.arange(5)*72.0
+ciao.measureNewTTRefPositions("TWHydra")
+TT = [ciao.get_Tip()[0], ciao.get_Tilt()[0]]
+
+#TTLoop = numpy.array([2.0, 5.0])
+TTLoop = numpy.array([5.0])
+#DrotLoop = numpy.arange(5)*72.0
+DrotLoop = numpy.array([0.0])
 
 for drot in DrotLoop:
     ciao.moveDerotator(drot)
@@ -51,6 +55,8 @@ for drot in DrotLoop:
             print 'Moved to Tip, Tilt : ', factor*tip, factor*tilt
 
             time.sleep(3.5)
-            ciao.measurePixelFrames("TTMapPixels_"+str(i)+"_"+str(tip)+"_"+str(tilt))
+            ciao.measurePixelFrames("TTMapPixels_"+str(i)+"_"+str(factor*tip)+"_"+str(factor*tilt))
             i += 1
 
+ciao.set_Tip(TT[0])
+ciao.set_Tilt(TT[1])

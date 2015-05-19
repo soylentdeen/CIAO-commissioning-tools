@@ -211,6 +211,14 @@ class VLTConnection( object ):
         tip = self.sendCommand("msgSend \"\" CDMSGateway GETMAP \"-object TTCtr.ACT_POS_REF_MAP -function 0,0 1,0\"", response=True)
         return self.parse(tip, numpy.float32)
 
+    def get_Tip(self):
+        tip = self.sendCommand("msgSend \"\" CDMSGateway GETMAP \"-object TTCtr.ACT_POS_REF_MAP -function 0,0\"", response=True)
+        return self.parse(tip, numpy.float32)
+
+    def get_Tilt(self):
+        tilt = self.sendCommand("msgSend \"\" CDMSGateway GETMAP \"-object TTCtr.ACT_POS_REF_MAP -function 1,0\"", response=True)
+        return self.parse(tilt, numpy.float32)
+
     def set_TT_gain(self, gain):
         self.sendCommand("msgSend \"\" CDMSGateway SETMAP \"-object TTCtr.TERM_B -function 0,0="+str("%.2g" % gain)+"\"")
         self.sendCommand("msgSend \"\" spaccsServer EXEC \"-command TTCtr.update ALL\"")

@@ -7,7 +7,7 @@ import os
 import glob
 import time
 
-datdir = "/diska/data/SPARTA/2015-05-19/PupilConjugation_2/"
+datdir = "/diska/data/SPARTA/2015-05-19/PupilConjugation_3/"
 ciao = VLTTools.VLTConnection(simulate=False, datapath=datdir)
 
 """
