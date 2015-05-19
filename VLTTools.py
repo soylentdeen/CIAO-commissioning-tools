@@ -144,7 +144,7 @@ class VLTConnection( object ):
 
     def parse(self, text, type):
         lines = text.split('\n')
-        retval = numpy.array(lines[1].split(), dtype=type)
+        retval = numpy.array(lines[1].split(','), dtype=type)
         return retval
 
     def applyPAF(self, paf):
@@ -197,13 +197,15 @@ class VLTConnection( object ):
 
     def set_Tip(self, tip):
         self.CDMS.maps['TTCtr.ACT_POS_REF_MAP'].data[0][0] = tip
-        self.sendCommand("msgSend \"\" CDMSGateway SETMAP \"-object TTCtr.ACT_POS_REF_MAP -function 0,0="+str("%.2g" % tip)+"\"")
-        self.sendCommand("msgSend \"\" spaccsServer EXEC \"-command TTCtr.update ALL\"")
+        self.transmitMap('TTCtr.ACT_POS_REF_MAP', update='TTCtr')
+        #self.sendCommand("msgSend \"\" CDMSGateway SETMAP \"-object TTCtr.ACT_POS_REF_MAP -function 0,0= "+str("%.3g" % tip)+"\"")
+        #self.sendCommand("msgSend \"\" spaccsServer EXEC \"-command TTCtr.update ALL\"")
 
     def set_Tilt(self, tilt):
         self.CDMS.maps['TTCtr.ACT_POS_REF_MAP'].data[0][1] = tilt
-        self.sendCommand("msgSend \"\" CDMSGateway SETMAP \"-object TTCtr.ACT_POS_REF_MAP -function 0,1="+str("%.2g" % tilt)+"\"")
-        self.sendCommand("msgSend \"\" spaccsServer EXEC \"-command TTCtr.update ALL\"")
+        self.transmitMap('TTCtr.ACT_POS_REF_MAP', update='TTCtr')
+        #self.sendCommand("msgSend \"\" CDMSGateway SETMAP \"-object TTCtr.ACT_POS_REF_MAP -function 0,1= "+str("%.3g" % tilt)+"\"")
+        #self.sendCommand("msgSend \"\" spaccsServer EXEC \"-command TTCtr.update ALL\"")
 
     def get_TipTilt(self):
         tip = self.sendCommand("msgSend \"\" CDMSGateway GETMAP \"-object TTCtr.ACT_POS_REF_MAP -function 0,0 1,0\"", response=True)
@@ -228,6 +230,22 @@ class VLTConnection( object ):
     #"""
 
     #"""
+
+    def getTTFocus(self):
+        TT = self.sendCommand("msgSend \"\" spaccsServer EXEC \" -command LoopMonitor.measureTipTilt 10 \"", response=True)
+        TT = self.parse(TT, numpy.float32)
+
+        focus = self.sendCommand("msgSend \"\" spaccsServer EXEC \" -command LoopMonitor.measureFocus 10 \"", response=True)
+        focus = self.parse(focus, numpy.float32)
+
+        return numpy.append(TT, focus)
+        
+    def getIntensities(self):
+        self.sendCommand("msgSend \"\" spaccsServer EXEC \" -command AcqOptimiser.measureFrames 10 \"", response=False)
+
+
+        return intensities
+
     def calc_CommandMatrix(self, nFiltModes=20):
         self.modalBasis = SPARTATools.modalBasis(self.CDMS.maps['HORecnCalibrat.RESULT_IM'].data, self.CDMS.maps['TTRecnCalibrat.RESULT.IM'].data, nFiltModes)
         self.modalBasis.computeSystemControlMatrix()
@@ -238,6 +256,10 @@ class VLTConnection( object ):
         #self.CDMS.maps['HOCtr.AWF_IM_KERNEL'].replace(self.modalBasis.AWFbasis)
         self.CDMS.maps['HOCtr.PRA_PISTON_MODE'].replace(self.modalBasis.pistonMode)
         self.CDMS.maps['HOCtr.PRA_PISTON_PROJECTION'].replace(self.modalBasis.pistonProj)
+        self.CDMS.maps['LoopMonitor.SLOPES2FOCUS'].replace(self.modalBasis.S2Z[2,:])
+        self.CDMS.maps['LoopMonitor.SLOPES2TT'].replace(self.modalBasis.S2Z[0:2,:])
+        self.CDMS.maps['LoopMonitor.SLOPES2FOCUS'].write()
+        self.CDMS.maps['LoopMonitor.SLOPES2TT'].write()
         self.transmitMap('HOCtr.TT_TO_HO', update='HOCtr')
         self.transmitMap('HOCtr.HO_TO_TT', update='HOCtr')
         self.transmitMap('Recn.REC1.CM', update='Recn')
@@ -245,9 +267,39 @@ class VLTConnection( object ):
         #self.transmitMap('HOCtr.AWF_IM_KERNEL', update='HOCtr')
         self.transmitMap('HOCtr.PRA_PISTON_MODE', update='HOCtr')
         self.transmitMap('HOCtr.PRA_PISTON_PROJECTION', update='HOCtr')
-        #self.CDMS.maps['Recn.REC1.CM'].replace(self.modalBasis.CM)
+        self.transmitMap('LoopMonitor.SLOPES2FOCUS', update='LoopMonitor')
+        self.transmitMap('LoopMonitor.SLOPES2TT', update='LoopMonitor')
+        self.CDMS.maps['Recn.REC1.CM'].replace(self.modalBasis.CM)
     #"""
         
+    def dumpCommandMatrix(self, nFiltModes=20):
+        #self.modalBasis = SPARTATools.modalBasis(self.CDMS.maps['HORecnCalibrat.RESULT_IM'].data, self.CDMS.maps['TTRecnCalibrat.RESULT.IM'].data, nFiltModes)
+        #self.modalBasis.computeSystemControlMatrix()
+        hdu = pyfits.PrimaryHDU(numpy.array(self.modalBasis.M2V, dtype=numpy.float32))
+        hdu.writeto("M2V.fits", clobber=True)
+        hdu = pyfits.PrimaryHDU(numpy.array(self.modalBasis.TT2HO, dtype=numpy.float32))
+        hdu.writeto("TT2HO.fits", clobber=True)
+        hdu = pyfits.PrimaryHDU(numpy.array(self.modalBasis.S2M, dtype=numpy.float32))
+        hdu.writeto("S2M.fits", clobber=True)
+        zeroCM = numpy.zeros(self.modalBasis.CM.shape, dtype=numpy.float32)
+        hdu = pyfits.PrimaryHDU(self.modalBasis.CM)
+        hdu.writeto("CM.fits", clobber=True)
+        zeroCM = numpy.zeros(62, dtype=numpy.int)
+        hdu = pyfits.PrimaryHDU(zeroCM)
+        hdu.writeto("RTC_HODM_UNUSED_ACT_MAP.fits", clobber=True)
+        #zeroCM = numpy.zeros(self.modalBasis.CM.shape, dtype=numpy.float32)
+        #hdu = pyfits.PrimaryHDU(zeroCM)
+        hdu.writeto("HODM_SLUG_ACT_GAINS.fits", clobber=True)
+
+        CM = numpy.dot(self.modalBasis.M2V, self.modalBasis.S2M)
+        tiltHO = numpy.dot(self.modalBasis.TT2HO, CM[60:62,:])
+        aux_proj = numpy.zeros((62, 136), dtype=numpy.float32)
+        aux_proj[0:60,:] += tiltHO
+        hdu = pyfits.PrimaryHDU(aux_proj)
+        hdu.writeto("CLMatrixOptimiser.AUX_PROJ.fits", clobber=True)
+        self.CDMS.maps["RTC.MODAL_GAINS"].write("RTC.MODAL_GAINS.fits")
+
+
     def updateRefSlopes(self, x, y):
         slopes = numpy.zeros(136)
         slopes[0::2] += x
@@ -275,6 +327,7 @@ class VLTConnection( object ):
         self.sendCommand(command)
         command = "msgSend \"\" spaccsServer EXEC \" -command LoopRecorder.run\""
         self.sendCommand(command)
+        print "Took Circular Buffer"
 
     def measurePixelFrames(self, recordingName="Arcturus", nframes=100):
         command = "msgSend \"\" spaccsServer SETUP \"-function PixelRecorder.FILE_BASENAME "+recordingName+"\""
@@ -285,6 +338,7 @@ class VLTConnection( object ):
         self.sendCommand(command)
         command = "msgSend \"\" spaccsServer EXEC \" -command PixelRecorder.run\""
         self.sendCommand(command)
+        print "Took Pixel Frame"
 
     def measureNewHORefPositions(self, recordingName):
         command = "msgSend \"\" spaccsServer EXEC \" -command TTCtr.openLoop\""
@@ -432,6 +486,13 @@ class VLTConnection( object ):
     def get_InteractionMatrices(self):
         self.updateMap('HORecnCalibrat.RESULT_IM')
         self.updateMap('TTRecnCalibrat.RESULT.IM')
+
+    def set_InteractionMatrices(self, HOIM_file, TTIM_file):
+        self.CDMS.maps["HORecnCalibrat.RESULT_IM"].load(HOIM_file)
+        self.CDMS.maps["TTRecnCalibrat.RESULT.IM"].load(TTIM_file)
+        #self.transmitMap("HORecnCalibrat.RESULT_IM")
+        #self.transmitMap("TTRecnCalibrat.RESULT.IM")
+
 
     def changePixelTapPoint(self, tp):
         try:

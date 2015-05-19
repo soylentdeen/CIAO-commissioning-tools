@@ -7,7 +7,8 @@ import os
 import glob
 import time
 
-ciao = VLTTools.VLTConnection(simulate=False)
+datdir = "/diska/data/SPARTA/2015-05-19/PupilConjugation_2/"
+ciao = VLTTools.VLTConnection(simulate=False, datapath=datdir)
 
 """
 Which variables do we want to vary?
@@ -24,14 +25,15 @@ datadir = "HOIM_test_data/"
 
 logfile = open(os.path.expanduser('~')+'/data/'+datadir+'logfile.dat', 'w')
 
-refpixelsFiles = glob.glob(os.path.expanduser('~')+'/data/'+datadir+'RP2*.fits')
+#refpixelsFiles = glob.glob(os.path.expanduser('~')+'/data/'+datadir+'RP2*.fits')
 
-for f in refpixelsFiles:
-    junk = f.split('_')
-    x =junk[-3]
-    y = junk[-2]
+rpx = [0.0, -0.35, -0.35, -0.5, 0.0, 0.35, 0.35, 0.5]
+rpy = [-0.5, -0.35, 0.35, 0.0, 0.5, -0.35, 0.35, 0.0]
+
+#for f in refpixelsFiles:
+for x, y in zip(rpx, rpy):
     print("%s   %s" % (x, y))
-    ciao.updateReferenceSlopes(f)
+    ciao.updateRefSlopes(x+3.5, y+3.5)
     print("Updated the reference Slopes")
     time.sleep(1.0)
     ciao.measureNewTTRefPositions("TWHydra")
@@ -41,7 +43,7 @@ for f in refpixelsFiles:
     ciao.setup_HOIM()
     ciao.measure_HOIM(config=True)
     #raw_input("Record Interaction Matrix, Press Enter when Done")
-    ciao.saveMap(mapname="HORecnCalibrat.RESULT_IM", filename=datadir+"IM_"+x+"_"+y+"_.fits")
+    ciao.saveMap(mapname="HORecnCalibrat.RESULT_IM", filename="IM_"+str(x)+"_"+str(y)+"_.fits")
 
 
 """

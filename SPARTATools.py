@@ -191,7 +191,14 @@ class modalBasis ( object ):
        self.nTTAct = 2    # Number of Tip/Tilt Actuators
        self.nSubap = 136   # Number of Sub-Apertures * 2
        self.createModalBasis()
+       self.calcS2Z()
        self.mirrorZern = pyfits.getdata(self.datapath+"Zernike.fits")
+
+   def calcS2Z(self):
+       norder = 8
+       Jmax = (norder*(norder+1))/2
+       truncated = self.Z2S[:,0:Jmax-1]
+       self.S2Z = numpy.linalg.pinv(truncated)
 
    def getZernikeOffsets(self, coeffs):
        offsets = numpy.zeros(60)

@@ -33,3 +33,6 @@ TTCtr.TERM_B, 2, 1, float32, 0.0, False
 TTCtr.SEC_ACT_UNSCR_MAP, 60, 1, int32, -1.0, True
 HORecnCalibrat.RESULT_IM, 136, 60, float32, 0.0, False
 TTRecnCalibrat.RESULT.IM, 136, 2, float32, 0.0, False
+RTC.MODAL_GAINS, 1, 50, float32, 0.0, False
+LoopMonitor.SLOPES2FOCUS, 1, 136, float32, 0.0, False
+LoopMonitor.SLOPES2TT, 2, 136, float32, 0.0, False

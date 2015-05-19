@@ -10,12 +10,12 @@ import time
 
 i = 0
 #datadir = "Derotator_test_data/"
-datadir = "/diska/data/SPARTA/2015-04-10/Derotator_6/"
+datadir = "/diska/data/SPARTA/2015-05-18/Derotator_1/"
 ciao = VLTTools.VLTConnection(simulate=False, datapath=datadir)
 
 #logfile = open(os.path.expanduser('~')+'/data/'+datadir+'logfile.dat', 'w')
 
-short = False
+short = True
 
 if short:
     angles = numpy.arange(10)*40.0
