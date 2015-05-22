@@ -162,13 +162,17 @@ def computeHODisturbanceFrame(nFrames, filename, rng=0.2, max=0.3, disturbType="
       warnings.simplefilter('ignore')
       hdu.writeto(filename, clobber=True)
 
-def computeTTDisturbanceFrame(nFrames, filename, p1, p2):
+def computeTTDisturbanceFrame(nFrames, filename, tip, tilt, waveshape='SQUARE'):
    nAct = 2
    frame = numpy.zeros((nFrames, nAct), dtype=numpy.float32)
-   frame[0:nFrames/2,0]=p1[0]
-   frame[0:nFrames/2,1]=p1[1]
-   frame[nFrames/2:,0] =p2[0]
-   frame[nFrames/2:,1] =p2[1]
+   if waveshape=='SQUARE':
+       frame[0:nFrames/2,0]=tip
+       frame[0:nFrames/2,1]=tilt
+       frame[nFrames/2:,0] =-tip
+       frame[nFrames/2:,1] =-tilt
+   elif waveshape=='SINE':
+       frame[:,0] = numpy.cos(numpy.arange(nFrames)*6.28/nFrames)*tip
+       frame[:,1] = numpy.sin(numpy.arange(nFrames)*6.28/nFrames)*tilt
    hdu=pyfits.PrimaryHDU(frame)
    with warnings.catch_warnings():
       warnings.simplefilter('ignore')

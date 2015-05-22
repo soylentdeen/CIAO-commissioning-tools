@@ -7,5 +7,5 @@ import VLTTools
 ciao = VLTTools.VLTConnection(simulate=False)
 
 ciao.get_InteractionMatrices()
-ciao.calc_CommandMatrix(nFiltModes=10)
+ciao.calc_CommandMatrix(nFiltModes=20)
 print "This is where we will Compute the Modal Basis from the IMs"

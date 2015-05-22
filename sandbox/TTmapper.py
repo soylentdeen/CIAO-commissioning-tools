@@ -8,7 +8,7 @@ import glob
 import time
 import errno
 
-datadir = "/diska/data/SPARTA/2015-05-19/TTMap_2/"
+datadir = "/diska/data/SPARTA/2015-05-19/TTMap_3/"
 ciao = VLTTools.VLTConnection(simulate=False, datapath=datadir)
 
 #ciao.measureNewTTRefPositions("Alderan")
@@ -39,10 +39,10 @@ for line in pupilShiftFile:
 ciao.measureNewTTRefPositions("TWHydra")
 TT = [ciao.get_Tip()[0], ciao.get_Tilt()[0]]
 
-#TTLoop = numpy.array([2.0, 5.0])
-TTLoop = numpy.array([5.0])
-#DrotLoop = numpy.arange(5)*72.0
-DrotLoop = numpy.array([0.0])
+TTLoop = numpy.array([2.0, 5.0])
+#TTLoop = numpy.array([5.0])
+DrotLoop = numpy.arange(5)*72.0
+#DrotLoop = numpy.array([0.0])
 
 for drot in DrotLoop:
     ciao.moveDerotator(drot)

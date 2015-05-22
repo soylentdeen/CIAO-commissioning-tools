@@ -281,14 +281,16 @@ class VLTConnection( object ):
     #"""
         
     def dumpCommandMatrix(self, nFiltModes=20):
-        #self.modalBasis = SPARTATools.modalBasis(self.CDMS.maps['HORecnCalibrat.RESULT_IM'].data, self.CDMS.maps['TTRecnCalibrat.RESULT.IM'].data, nFiltModes)
-        #self.modalBasis.computeSystemControlMatrix()
+        self.modalBasis = SPARTATools.modalBasis(self.CDMS.maps['HORecnCalibrat.RESULT_IM'].data, self.CDMS.maps['TTRecnCalibrat.RESULT.IM'].data, nFiltModes)
+        self.modalBasis.computeSystemControlMatrix()
         hdu = pyfits.PrimaryHDU(numpy.array(self.modalBasis.M2V, dtype=numpy.float32))
         hdu.writeto("M2V.fits", clobber=True)
         hdu = pyfits.PrimaryHDU(numpy.array(self.modalBasis.TT2HO, dtype=numpy.float32))
         hdu.writeto("TT2HO.fits", clobber=True)
         hdu = pyfits.PrimaryHDU(numpy.array(self.modalBasis.S2M, dtype=numpy.float32))
         hdu.writeto("S2M.fits", clobber=True)
+        hdu = pyfits.PrimaryHDU(numpy.array(self.modalBasis.S2Z, dtype=numpy.float32))
+        hdu.writeto("S2Z.fits", clobber=True)
         zeroCM = numpy.zeros(self.modalBasis.CM.shape, dtype=numpy.float32)
         hdu = pyfits.PrimaryHDU(self.modalBasis.CM)
         hdu.writeto("CM.fits", clobber=True)
@@ -423,10 +425,9 @@ class VLTConnection( object ):
         command = "spaciaortdfwDisturbPubl -d HODM -f "+fname
         self.sendCommand(command)
 
-    def disturbTT(self):
-        fname = self.datapath+"Disturbances/disturbanceTTFrame.fits"
-        amp = 0.1
-        SPARTATools.computeTTDisturbanceFrame(100, fname, [amp, 0.0], [-amp, 0.0])
+    def disturbTT(self, tip=0.05, tilt=0.05, waveshape='SQUARE'):
+        fname = self.datapath+"disturbanceTTFrame.fits"
+        SPARTATools.computeTTDisturbanceFrame(1000, fname, tip, tilt, waveshape=waveshape)
         command = "spaciaortdfwDisturbPubl -d ITTM -f "+fname+" -m 1000"
         self.sendCommand(command)
 
@@ -469,8 +470,22 @@ class VLTConnection( object ):
     def measure_TTIM(self, config=None):
         if config:
             self.applyPAF(self.CDMS.paf["TTRecnCalibrat.CFG.DYNAMIC"])
+
+        #command = "msgSend \"\" spaccsServer EXEC \" -command HOCtrUpload.run\""
+        #self.sendCommand(command)
+        command = "msgSend \"\" spaccsServer EXEC \" -command TTRecnCalibrat.update ALL\""
+        self.sendCommand(command)
         command = "msgSend \"\" spaccsServer EXEC \" -command TTRecnCalibrat.run\""
         self.sendCommand(command)
+        #command = "msgSend \"\" spaccsServer EXEC \" -command HORecnCalibrat.waitIdle\""
+        command = "dbRead \"<alias>SPARTA:TTRecnCalibrat.percent_complete\""
+        complete = 0
+        time.sleep(5.0)
+        while complete < 100:
+            wait = self.sendCommand(command, response=True)
+            complete = numpy.float(wait.split()[-1])
+            #print complete
+            time.sleep(5.0)
 
     def setup_HOIM(self, amplitude=1.0, noise=0.05, skip=0.05,
                    period=0.2, mode_cycles=1, cycles=3):
@@ -488,6 +503,19 @@ class VLTConnection( object ):
         self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("CYCLES", cycles)
         self.CDMS.paf["HORecnCalibrat.CFG.DYNAMIC"].update("MODE_CYCLES", mode_cycles)
     
+    def setup_TTIM(self, amplitude=0.05, skip=0.2,
+                   period=2.0, mode_cycles=1, cycles=3):
+        self.CDMS.paf["TTRecnCalibrat.CFG.DYNAMIC"].update("TIME_UNIT",
+                  "SECONDS")
+        self.CDMS.paf["TTRecnCalibrat.CFG.DYNAMIC"].update("WAVE_PERIOD",
+                  period)
+        self.CDMS.paf["TTRecnCalibrat.CFG.DYNAMIC"].update("AMPLITUDE",
+                  amplitude)
+        self.CDMS.paf["TTRecnCalibrat.CFG.DYNAMIC"].update("SKIP_TIME", skip)
+        self.CDMS.paf["TTRecnCalibrat.CFG.DYNAMIC"].update("CYCLES", cycles)
+        self.CDMS.paf["TTRecnCalibrat.CFG.DYNAMIC"].update("MODE_CYCLES", mode_cycles)
+        self.CDMS.paf["TTRecnCalibrat.CFG.DYNAMIC"].update("INTERACTION_MATRIX", 'TTRecnCalibrat.RESULT.IM')
+
     def get_HOIM(self):
         self.updateMap('HORecnCalibrat.RESULT_IM')
 
