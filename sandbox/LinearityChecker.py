@@ -17,6 +17,7 @@ def makeCircle(params, t):
     lag = params[2]
     x = r*numpy.sin(t/k+lag)
     y = r*numpy.cos(t/k+lag)
+    print x[30]
     return numpy.array([x, y]).T
     
 
