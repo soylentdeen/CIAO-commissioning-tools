@@ -43,7 +43,8 @@ for i in range(9):
             xc.append(i*8+4)
             yc.append(j*8+4)
 
-datadir = '/diska/data/SPARTA/2015-05-22/'
+#datadir = '/diska/data/SPARTA/2015-05-22/'
+datadir = '../Data/'
 
 #numbers = [16, 17, 18, 19]
 numbers = [25, 26, 27, 28]

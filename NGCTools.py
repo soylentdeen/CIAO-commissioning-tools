@@ -136,9 +136,16 @@ class detector( object ):
     def __init__(self, beamSize=1776.0):
         # Calculates the relative size of the central obscuration (M2)
         self.datadir = os.path.dirname(__file__)+'/Data/'
+        self.scramblingMap = pyfits.getdata(
+                            self.datadir+"scramblemap.fits")
+        self.unscramblingMap = pyfits.getdata(
+                            self.datadir+"unscramblemap.fits")
+        self.windowMap = pyfits.getdata(
+                            self.datadir+"windowmap.fits")
+        self.SLsubapmap = self.datadir+"LoopDisplaySrv.SUBAP_MAP.fits"
         self.centObscScale = 1.116/8.00
         self.beamSize = beamSize
-        self.lenslet = lensletArray()
+        self.lenslet = lensletArray(self)
         self.wavefront = waveFront(beamSize=beamSize)
         self.pupil = pupil(0.0, 0.0,
                      innerRadius=beamSize/2.0*self.centObscScale,
@@ -147,6 +154,7 @@ class detector( object ):
         self.derotator = derotator()
         self.nx = 72
         self.ny = 72
+        self.readoutMode = "8x8"
         self.spacing = 24.0 #microns  Is this value correct?
         self.xpix = (numpy.arange(self.nx)-self.nx/2.0)*self.spacing
         self.ypix = (numpy.arange(self.ny)-self.ny/2.0)*self.spacing
@@ -155,12 +163,7 @@ class detector( object ):
         self.z = []
         self.frames = []
         self.centroids = []
-        self.scramblingMap = pyfits.getdata(
-                            self.datadir+"scramblemap.fits")
-        self.unscramblingMap = pyfits.getdata(
-                            self.datadir+"unscramblemap.fits")
-        self.windowMap = pyfits.getdata(
-                            self.datadir+"windowmap.fits")
+        self.weightingMap = self.makeWeightingMap()
 
     def scrambleFrame(self):
         #"""
@@ -264,6 +267,15 @@ class detector( object ):
 
         return numpy.array(centroids), numpy.array(intensities)
 
+    def makeWeightingMap(self):
+        weightingMap = numpy.zeros((72,72),dtype=numpy.float32)
+
+        for coord in self.lenslet.coords:
+            x = coord[0]
+            y = coord[1]
+            print "Not done yet!"
+                    
+        
     def calcWaveFront(self, x, y):
         wave = self.wavefront.calcWaveFront(x, y)
         rotatedPosition = self.derotator.getMirrorPosition(x, y)
@@ -291,10 +303,13 @@ class lensletArray( object ):
     """
     This class simulates the lenslet array
     """
-    def __init__(self, spacing=192.0, fl=2095.0):
+    def __init__(self, parent, spacing=192.0, fl=2095.0):
         """
             Spacing - spacing between adjacent lenslets (in microns)
             fl - focal length of individual lenslet (in microns)
+        """
+        self.parent = parent
+        self.SLapertureMap = pyfits.getdata(self.parent.SLsubapmap)
         """
         self.apertureMap = [[False,False,True,True,True,True,True,False,False],
                [False, True, True, True, True, True, True, True, False],
@@ -305,14 +320,21 @@ class lensletArray( object ):
                [True, True, True, True, True, True, True, True, True],
                [False, True, True, True, True, True, True, True, False],
                [False, False, True, True, True, True, True, False, False]]
+        """
         self.spacing = spacing   # Lenslet Array Spacing in microns
         self.fl = fl
 
         coords = []
 
+        """
         for i in range(9):
             for j in range(9):
                 if self.apertureMap[i][j]:
+                    coords.append(((i-4)*spacing, (j-4)*spacing))
+        """
+        for i in range(9):
+            for j in range(9):
+                if self.SLapertureMap[i][j] = :
                     coords.append(((i-4)*spacing, (j-4)*spacing))
 
         self.coordinates = coords
