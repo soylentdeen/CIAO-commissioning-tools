@@ -1,4 +1,5 @@
 import scipy
+import scipy.fftpack as fftpack
 import matplotlib.pyplot as pyplot
 import numpy
 import pyfits
@@ -11,20 +12,22 @@ fig = pyplot.figure(0)
 fig.clear()
 ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
 
-def makeCircle(params, t):
-    r = params[0]
-    k = params[1]
-    lag = params[2]
-    x = r*numpy.sin(t/k+lag)
-    y = r*numpy.cos(t/k+lag)
-    print x[30]
-    return numpy.array([x, y]).T
-    
+makeCircle = lambda p, t: p[0]*numpy.sin(6.28*t/p[1] + p[2])
 
 def fitCircle(TT, time):
-   params = 0.5, 30, 0.1
-   errfunc = lambda p: numpy.ravel(makeCircle(p, time) - TT)
-   p, success = scipy.optimize.leastsq(errfunc, params)
+   dT = numpy.average(time[1:101] - time[:100])
+   yhat = fftpack.rfft(numpy.array(TT[:,0], dtype=numpy.float32))
+   idx = (yhat**2).argmax()
+   freqs = fftpack.rfftfreq(len(TT[:,0]), d=dT/numpy.pi)
+
+   params = (numpy.max(TT[:,0])-numpy.min(TT[:,0]))/2.0, freqs[idx]/numpy.pi, 0.0
+
+   errfunc = lambda p, t, meas: numpy.r_[
+             makeCircle(p, t) - meas[:,0],
+             makeCircle(p+[0.0, 0.0, numpy.pi/2.0], t) - meas[:,1]
+           ]
+   p, success = scipy.optimize.leastsq(errfunc, params, args = (time, TT))
+   print p
    return p
 
 scfac = 1.0
@@ -55,7 +58,7 @@ for n, a, c in zip(numbers, amp, color):
     TTCommands = LoopData.field(6)
     seconds = LoopData.field(1)
     microsec = LoopData.field(2)
-    time = seconds-numpy.min(seconds) + microsec*1e-6
+    time = numpy.float32(seconds-numpy.min(seconds) + microsec*1e-6)
 
     coeffs = fitCircle(TTCommands, time)
 
@@ -66,9 +69,8 @@ for n, a, c in zip(numbers, amp, color):
                             centy-numpy.mean(centy)])
         expected = numpy.array([a*numpy.sin(time/coeffs[1]+coeffs[2]),
                                 a*numpy.cos(time/coeffs[1]+coeffs[2])])
-        print asdf
-        ax.plot((time% coeffs[1])+x, (meas-expected)+y, color=c)
-        #ax.plot(scfac*(centx-numpy.mean(centx))+x, scfac*(centy-numpy.mean(centy))+y, color = c)
+        #ax.plot((time% coeffs[1])+x, (meas-expected)+y, color=c)
+        ax.plot(scfac*(centx-numpy.mean(centx))+x, scfac*(centy-numpy.mean(centy))+y, color = c)
         #ax.plot(a*10*scfac*numpy.sin(numpy.arange(21)*6.28/20)+x, a*10*scfac*numpy.cos(numpy.arange(21)*6.28/20)+y, 'k')
 
 ax.set_title("Linear Centroiding Estimation Algorithm Testing")
