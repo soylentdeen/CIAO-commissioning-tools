@@ -4,6 +4,8 @@ import pyfits
 import os
 from scipy.misc import factorial as fac
 import scipy.interpolate as interp
+import scipy.fftpack as fftpack
+import matplotlib.pyplot as pyplot
 
 def twoDgaussian(x, y, center, stdev, A):
     retval = A * (numpy.exp(-(x-center[0])**2.0/stdev[0])*
@@ -69,6 +71,13 @@ class pupil( object ):
         self.y = y
         self.inrad2 = innerRadius**2.0
         self.outrad2 = outerRadius**2.0
+
+    def calculateFlux(self, x, y):
+        pythag = (self.x-x)**2.0 + (self.y - y)**2.0
+        if ( (pythag < self.outrad2) & (pythag > self.inrad2)):
+            return 1.0
+        else:
+            return 0.0
 
     def calculateApertureIllumination(self, corner, size):
         area = 0.0
@@ -143,6 +152,7 @@ class detector( object ):
         self.windowMap = pyfits.getdata(
                             self.datadir+"windowmap.fits")
         self.SLsubapmap = self.datadir+"LoopDisplaySrv.SUBAP_MAP.fits"
+        self.pixPerSubAp = 8
         self.centObscScale = 1.116/8.00
         self.beamSize = beamSize
         self.lenslet = lensletArray(self)
@@ -163,7 +173,7 @@ class detector( object ):
         self.z = []
         self.frames = []
         self.centroids = []
-        self.weightingMap = self.makeWeightingMap()
+        #self.weightingMap = self.makeWeightingMap()
 
     def scrambleFrame(self):
         #"""
@@ -214,6 +224,10 @@ class detector( object ):
         """
         self.derotator.setAngle(numpy.deg2rad(angle))
         self.pupil.setDecenter(pupil[0], pupil[1])
+        self.wavefront.setZern(zern)
+        self.DM.setMirror(actuatorPokes)
+        self.expose()
+        """
         centroids, amplitudes = self.calculateCentroids(zern, actuatorPokes)
         z = numpy.zeros((self.ny, self.nx))
         for xcoord in range(self.nx):
@@ -226,6 +240,59 @@ class detector( object ):
         self.z.append(z)
         self.scrambleFrame()
         self.centroids.append(centroids)
+        #"""
+
+    def expose(self):
+        subsamp = 100.0
+        FWHM_i = 1.1 * subsamp # FWHM in Pixel space
+        FWHM_k = 0.88*self.pixPerSubAp*subsamp/FWHM_i
+        location = int(round((self.pixPerSubAp*subsamp - FWHM_k)/2.0))
+        delta = self.lenslet.spacing/2.0
+        nPixPoints = self.pixPerSubAp*subsamp
+        z = numpy.zeros((self.ny, self.nx))
+        ptsOnDetector = numpy.linspace(-nPixPoints/2.0*self.spacing, 
+                nPixPoints*self.spacing/2.0, nPixPoints)
+        gridx, gridy = numpy.meshgrid(ptsOnDetector, ptsOnDetector)
+        gridx /= 100.0
+        gridy /= 100.0
+        totalFlux = 0.0
+        #fig = pyplot.figure(0)
+        #fig.clear()
+        #ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+        for coord in self.lenslet.coordinates:
+            flux = numpy.zeros((nPixPoints, nPixPoints), dtype=numpy.complex)
+            #intensity = numpy.zeros((nPixPoints, nPixPoints))
+            #phase = numpy.zeros((nPixPoints, nPixPoints))
+            i = location
+            for x in numpy.linspace(coord[0]-delta, coord[0]+delta, 
+                    num=int(round(FWHM_k))):
+                j = location
+                for y in numpy.linspace(coord[1]-delta, coord[1]+delta, 
+                        num=int(round(FWHM_k))):
+                    flux[i][j] = numpy.complex(self.pupil.calculateFlux(x, y),
+                            self.calcWaveFront(x, y))
+                    #intensity[i][j] = self.pupil.calculateFlux(x, y)
+                    #phase[i][j] = self.calcWaveFront(x, y)
+                    totalFlux += 1
+                    j += 1
+                i += 1
+            image = fftpack.fft2(flux)
+            image = fftpack.fftshift((image*image.conjugate()).real)
+            xc = coord[0]+gridx
+            yc = coord[1]+gridy
+            inviewx = (self.xpix > numpy.min(xc)) & (self.xpix < numpy.max(xc))
+            inviewy = (self.ypix > numpy.min(yc)) & (self.ypix < numpy.max(yc))
+            for i in range(self.nx):
+                if inviewx[i]:
+                    for j in range(self.ny):
+                        if inviewy[j]:
+                            fp = scipy.where( (xc >= self.xpix[i]) & (xc < self.xpix[i]+self.spacing) & (yc >= self.ypix[j]) & (yc < self.ypix[j]+self.spacing))
+                            z[i][j] = numpy.sum(image[fp])
+                            #print i, j, z[i][j], coord
+                    #raw_input()
+        self.z.append(z)
+        self.scrambleFrame()
+
 
     def calculateCentroids(self, zern, actuatorPokes):
         """
@@ -282,6 +349,15 @@ class detector( object ):
         mirror = self.DM.calcPosition(rotatedPosition[0], rotatedPosition[1])
         return wave + mirror
 
+    def saveRawFrames(self, filename):
+        """
+        Saves the raw (unscrambled) frames to a data file
+        """
+
+        self.z = numpy.array(self.z)
+        hdu=pyfits.PrimaryHDU(self.z)
+        hdu.writeto(filename, clobber=True)
+
     def saveFrames(self, filename):
         """
         Saves the frames to a SPARTA-readable data file
@@ -334,7 +410,7 @@ class lensletArray( object ):
         """
         for i in range(9):
             for j in range(9):
-                if self.SLapertureMap[i][j] = :
+                if self.SLapertureMap[i][j]:
                     coords.append(((i-4)*spacing, (j-4)*spacing))
 
         self.coordinates = coords

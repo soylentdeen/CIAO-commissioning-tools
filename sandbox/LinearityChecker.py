@@ -3,10 +3,11 @@ import scipy.fftpack as fftpack
 import matplotlib.pyplot as pyplot
 import numpy
 import pyfits
-from NGCTools import lensletArray
+import NGCTools
 import scipy.optimize
 
-LA = lensletArray()
+detector = NGCTools.detector()
+LA = detector.lensletArray
 
 fig = pyplot.figure(0)
 fig.clear()
