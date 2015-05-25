@@ -243,6 +243,7 @@ class detector( object ):
         #"""
 
     def expose(self):
+        debug = False
         subsamp = 100.0
         FWHM_i = 1.1 * subsamp # FWHM in Pixel space
         FWHM_k = 0.88*self.pixPerSubAp*subsamp/FWHM_i
@@ -256,9 +257,15 @@ class detector( object ):
         gridx /= 100.0
         gridy /= 100.0
         totalFlux = 0.0
-        #fig = pyplot.figure(0)
-        #fig.clear()
-        #ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
+        if debug:
+            fig = pyplot.figure(0)
+            fig.clear()
+            ax1 = fig.add_axes([0.1, 0.1, 0.4, 0.4])
+            ax2 = fig.add_axes([0.1, 0.5, 0.4, 0.4])
+            ax3 = fig.add_axes([0.5, 0.1, 0.4, 0.4])
+            ax4 = fig.add_axes([0.5, 0.5, 0.4, 0.4])
+            extract = []
+            count = 1
         for coord in self.lenslet.coordinates:
             flux = numpy.zeros((nPixPoints, nPixPoints), dtype=numpy.complex)
             #intensity = numpy.zeros((nPixPoints, nPixPoints))
@@ -276,8 +283,15 @@ class detector( object ):
                     totalFlux += 1
                     j += 1
                 i += 1
+            flux[flux.real == 0.0] = numpy.complex(0.0, 0.0)
+            sig = abs(flux) > 0
+            flux[sig] -= numpy.complex(0, numpy.mean(flux.imag[sig]))
             image = fftpack.fft2(flux)
             image = fftpack.fftshift((image*image.conjugate()).real)
+            if debug:
+                if count in [8, 10, 15]:
+                    extract.append(image)
+                    count += 1
             xc = coord[0]+gridx
             yc = coord[1]+gridy
             inviewx = (self.xpix > numpy.min(xc)) & (self.xpix < numpy.max(xc))
@@ -290,6 +304,18 @@ class detector( object ):
                             z[i][j] = numpy.sum(image[fp])
                             #print i, j, z[i][j], coord
                     #raw_input()
+
+        if debug:
+            ax1.matshow(extract[0])
+            ax2.matshow(extract[1])
+            ax3.matshow(extract[2])
+            ax4.matshow(extract[2]-extract[0])
+            fig.show()
+            print numpy.max(extract[0])
+            print numpy.max(extract[1])
+            print numpy.max(extract[2])
+            print numpy.max(extract[2]-extract[0])
+            raw_input()
         self.z.append(z)
         self.scrambleFrame()
 
@@ -379,15 +405,17 @@ class lensletArray( object ):
     """
     This class simulates the lenslet array
     """
-    def __init__(self, parent, spacing=192.0, fl=2095.0):
+    def __init__(self, parent=None, spacing=192.0, fl=2095.0, angle=0.5):
         """
             Spacing - spacing between adjacent lenslets (in microns)
             fl - focal length of individual lenslet (in microns)
         """
-        self.parent = parent
-        self.SLapertureMap = pyfits.getdata(self.parent.SLsubapmap)
-        """
-        self.apertureMap = [[False,False,True,True,True,True,True,False,False],
+        if parent:
+            self.parent = parent
+            self.SLapertureMap = pyfits.getdata(self.parent.SLsubapmap)
+        
+        else:
+            self.SLapertureMap = [[False,False,True,True,True,True,True,False,False],
                [False, True, True, True, True, True, True, True, False],
                [True, True, True, True, True, True, True, True, True],
                [True, True, True, True, True, True, True, True, True],
@@ -396,9 +424,9 @@ class lensletArray( object ):
                [True, True, True, True, True, True, True, True, True],
                [False, True, True, True, True, True, True, True, False],
                [False, False, True, True, True, True, True, False, False]]
-        """
         self.spacing = spacing   # Lenslet Array Spacing in microns
         self.fl = fl
+        self.angle = numpy.deg2rad(angle)
 
         coords = []
 
@@ -411,7 +439,10 @@ class lensletArray( object ):
         for i in range(9):
             for j in range(9):
                 if self.SLapertureMap[i][j]:
-                    coords.append(((i-4)*spacing, (j-4)*spacing))
+                    x = (i-4)*spacing
+                    y = (j-4)*spacing
+                    coords.append((x*numpy.cos(self.angle)-y*numpy.sin(self.angle),
+                        x*numpy.sin(self.angle)+y*numpy.cos(self.angle)))
 
         self.coordinates = coords
 
