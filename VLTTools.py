@@ -350,32 +350,44 @@ class VLTConnection( object ):
         self.sendCommand(command)
         print "Took Pixel Frame"
 
-    def measureNewHORefPositions(self, recordingName):
+    def measureNewHORefPositions(self, recordingName='TWHydra', nframes=25):
         command = "msgSend \"\" spaccsServer EXEC \" -command TTCtr.openLoop\""
         self.sendCommand(command)
         time.sleep(2.0)
         command = "msgSend \"\" spaccsServer EXEC \" -command HOCtr.closeLoop\""
         self.sendCommand(command)
         time.sleep(5.0)
+
+        """
+        command = "msgSend \"\" CommandGateway EXEC \" LoopMonitor.measureRefDMPos "+str(nframes)+"\""
+        self.sendCommand(command)
+        #"""
         print "Recording Frames"
         self.measureCircularBuffer(recordingName=recordingName)
         time.sleep(2.0)
+        #"""
         print "Opening Loop"
         command = "msgSend \"\" spaccsServer EXEC \" -command HOCtr.openLoop\""
         self.sendCommand(command)
         time.sleep(2.0)
         self.averageHOPositions(recordingName)
 
-    def measureNewTTRefPositions(self, recordingName):
+    def measureNewTTRefPositions(self, recordingName='TWHydra', nframes=25):
         command = "msgSend \"\" spaccsServer EXEC \" -command HOCtr.openLoop\""
         self.sendCommand(command)
         time.sleep(2.0)
         command = "msgSend \"\" spaccsServer EXEC \" -command TTCtr.closeLoop\""
         self.sendCommand(command)
         time.sleep(5.0)
+        
+        """
+        command = "msgSend \"\" CommandGateway EXEC \" LoopMonitor.measureRefTTMPos "+str(nframes)+"\""
+        self.sendCommand(command)
+        #"""
         print "Recording Frames"
         self.measureCircularBuffer(recordingName=recordingName)
         time.sleep(2.0)
+        #"""
         print "Opening Loop"
         command = "msgSend \"\" spaccsServer EXEC \" -command TTCtr.openLoop\""
         self.sendCommand(command)
@@ -418,6 +430,53 @@ class VLTConnection( object ):
         ax = fig.add_axes([0.1, 0.1, 0.8, 0.8])
         ax.imshow(self.CDMS.maps['Recn.REC1.CM'].data)
         fig.savefig("CM.png")
+
+    def disturb(self, disturbance="disturbance.fits", baseName = "TWHydra"):
+        command = "msgSend \"\" spaccsServer SETUP \"-function LoopRecorder.FILE_DIRNAME "+self.datapath+"\""
+        self.sendCommand(command)
+        command = "msgSend \"\" spaccsServer SETUP \"-function PixelRecorder.FILE_DIRNAME "+self.datapath+"\""
+        self.sendCommand(command)
+        command = "msgSend \"\" spaccsServer SETUP \"-function PixelRecorder.FILE_BASENAME "+baseName+"_pixels\""
+        self.sendCommand(command)
+        command = "msgSend \"\" spaccsServer SETUP \"-function LoopRecorder.FILE_BASENAME "+baseName+"_frames\""
+        self.sendCommand(command)
+        command = "msgSend \"\" spaccsServer SETUP \"-function LoopRecorder.REQUESTED_FRAMES 0\""
+        self.sendCommand(command)
+        command = "msgSend \"\" spaccsServer SETUP \"-function PixelRecorder.REQUESTED_FRAMES 0\""
+        self.sendCommand(command)
+
+        self.CDMS.paf["HOCtrDisturb.CFG.DYNAMIC"].update("FILENAME", self.datapath+"DM"+disturbance)
+        self.CDMS.paf["TTCtrDisturb.CFG.DYNAMIC"].update("FILENAME", self.datapath+"TTM"+disturbance)
+        startTime = numpy.int(time.time()+20)
+        self.CDMS.paf["HOCtrDisturb.CFG.DYNAMIC"].update("START_AT", startTime)
+        self.CDMS.paf["TTCtrDisturb.CFG.DYNAMIC"].update("START_AT", startTime)
+        self.applyPAF(self.CDMS.paf["HOCtrDisturb.CFG.DYNAMIC"])
+        self.applyPAF(self.CDMS.paf["TTCtrDisturb.CFG.DYNAMIC"])
+
+        command="msgSend \"\" spaccsServer EXEC \"-command LoopRecorder.run\""
+        self.sendCommand(command)
+        command="msgSend \"\" spaccsServer EXEC \"-command PixelRecorder.run\""
+        self.sendCommand(command)
+        
+        command="msgSend \"\" spaccsServer EXEC \" -command HOCtrDisturb.run \""
+        #command = "spaciaortdfwDisturbPubl -d HODM -f " + self.datapath+disturbance
+        self.sendCommand(command)
+        command="msgSend \"\" spaccsServer EXEC \" -command TTCtrDisturb.run\""
+        self.sendCommand(command)
+
+        command = "dbRead \"<alias>SPARTA:HOCtrDisturb.percent_complete\""
+        complete = 0
+        time.sleep(5.0)
+        while complete < 100:
+            wait = self.sendCommand(command, response=True)
+            complete = numpy.float(wait.split()[-1])
+            print complete
+            time.sleep(5.0)
+
+        command="msgSend \"\" spaccsServer EXEC \"-command LoopRecorder.idle\""
+        self.sendCommand(command)
+        command="msgSend \"\" spaccsServer EXEC \"-command PixelRecorder.idle\""
+        self.sendCommand(command)
     
     def disturbHO(self, disturbType="SINE", rng=0.5, max=0.95, period=40.0, actNum=5):
         fname = self.datapath+"Disturbances/disturbanceFrame.fits"
@@ -542,6 +601,8 @@ class VLTConnection( object ):
                 print("Error!  Unrecognized tap point!")
                 escape
             command="cdmsSetProp Acq.CFG.DYNAMIC DET1.PIXEL_TAP -s \""+tp+"\""
+            self.sendCommand(command)
+            command = "msgSend \"\" spaccsServer EXEC \" -command Acq.update ALL\""
             self.sendCommand(command)
         except:
             print("Error!  Invalid tap point!")

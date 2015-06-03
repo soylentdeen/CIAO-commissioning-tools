@@ -8,3 +8,4 @@ TTCtrDisturb.CFG.DYNAMIC.COMMAND_CYCLES		1;	# null
 TTCtrDisturb.CFG.DYNAMIC.CYCLES			1;	# null
 TTCtrDisturb.CFG.DYNAMIC.FILENAME		"";	# null
 TTCtrDisturb.CFG.DYNAMIC.FREQ_EST_TIMEOUT	5;	# null
+TTCtrDisturb.CFG.DYNAMIC.START_AT           0;  # unix time to start disturbance

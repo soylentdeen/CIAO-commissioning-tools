@@ -8,3 +8,4 @@ HOCtrDisturb.CFG.DYNAMIC.COMMAND_CYCLES		1;	# null
 HOCtrDisturb.CFG.DYNAMIC.CYCLES			1;	# null
 HOCtrDisturb.CFG.DYNAMIC.FILENAME		"";	# null
 HOCtrDisturb.CFG.DYNAMIC.FREQ_EST_TIMEOUT	5;	# null
+HOCtrDisturb.CFG.DYNAMIC.START_AT           0;  # unix time to start disturbance

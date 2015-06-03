@@ -10,7 +10,7 @@ import time
 
 i = 0
 #datadir = "Derotator_test_data/"
-datadir = "/diska/data/SPARTA/2015-05-22/Derotator_4/"
+datadir = "/diska/data/SPARTA/2015-05-28/Derotator_1/"
 ciao = VLTTools.VLTConnection(simulate=False, datapath=datadir)
 
 #logfile = open(os.path.expanduser('~')+'/data/'+datadir+'logfile.dat', 'w')
@@ -22,7 +22,14 @@ if not(short):
     ciao.set_Tip(-0.017)
     ciao.set_Tilt(0.03)
 
-    ciao.measureNewTTRefPositions("TWHydra")
+    ciao.setup_TTIM(cycles=3)
+    ciao.measure_TTIM(config=True)
+    ciao.setup_HOIM(cycles=1)
+    ciao.measure_HOIM(config=True)
+    ciao.get_InteractionMatrices()
+    ciao.calc_CommandMatrix(nFiltModes=20)
+
+    ciao.measureNewTTRefPositions()
 
     TT = [ciao.get_Tip(), ciao.get_Tilt()]
 
@@ -33,7 +40,7 @@ if not(short):
 
     ciao.set_HO_gain(-0.01)
 
-    ciao.measureNewHORefPositions("BetaPic")
+    ciao.measureNewHORefPositions()
 
 
 
@@ -57,7 +64,7 @@ for angle in angles:
         ciao.get_InteractionMatrices()
         ciao.calc_CommandMatrix(nFiltModes=20)
 
-        ciao.measureNewTTRefPositions("TWHydra")
+        ciao.measureNewTTRefPositions()
 
     time.sleep(3)
     ciao.measureCircularBuffer("derot_circbuff_"+str(i)+"_")
